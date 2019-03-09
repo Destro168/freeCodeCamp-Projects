@@ -1,0 +1,203 @@
+// Complete the API routing below
+
+'use strict';
+
+var expect = require('chai').expect;
+var MongoClient = require('mongodb');
+
+const https = require('https');
+
+// Connect to mongoose.
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGO_URI);
+
+// Create stock schema template.
+var stockSchemaTemplate = {
+  stock: String,
+  likes: Number
+};
+
+// Create schema.
+var stockSchema = mongoose.Schema(stockSchemaTemplate);
+
+// Create Model.
+var stockModel = mongoose.model("Stock", stockSchema);
+
+
+// Create banned IP schema/model.
+var bannedIpSchema = mongoose.Schema({
+  ipAddress: String,
+});
+
+var bannedIpModel = mongoose.model("IPAddress", bannedIpSchema);
+
+module.exports = function (app) {
+
+  app.route('/api/stock-prices')
+    .get(function (req, res) {
+      // GET REQUESTER'S IP AND ERROR OUT IF BANNED. (Later on, we save IP).
+      var targetIp = bannedIpModel.
+      
+      //
+      // * GET USER INFO FROM QUERY STRING OR FORM DATA.
+      //
+
+      var reqData = {};
+      var doCompare = false;
+
+      if (req.query.stock) {
+        if (req.query.stock[0].length > 1) {
+          reqData = {
+            stockOne: req.query.stock[0],
+            stockTwo: req.query.stock[1],
+          }
+
+          doCompare = true;
+        } else {
+          reqData = {
+            stockOne: req.query.stock,
+            stockTwo: '',
+          }
+        }
+
+        // Always add like field.
+        reqData["like"] = req.query.like;
+      } else {
+        if (req.body.stock[0].length > 1) {
+          reqData = {
+            stockOne: req.body.stock[0],
+            stockTwo: req.body.stock[1],
+          }
+
+          doCompare = true;
+        } else {
+          reqData = {
+            stockOne: req.body.stock,
+            stockTwo: '',
+          }
+        }
+
+        // Always add like field.
+        reqData["like"] = req.body.like;
+      }
+      
+      //
+      // * ACQUIRE LIKES AND ADD IF REQUESTED BY USER
+      //
+
+      // Always retrieve current like count. Add a like if user wants to.
+      stockModel.find({
+        stock: {
+          $eq: reqData["stockOne"]
+        }
+      }, function (err, data) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+
+        // Add a like if user wnats to.
+        if (reqData["like"] && reqData["like"] == true) {
+          data["likes"] += 1;
+
+          data.save(function (err, data) {
+            if (err) {
+              console.log(err);
+              return;
+            }
+
+            console.log("Saved like for Stock 1:" + data);
+          });
+        }
+
+        reqData["stockOneLikeCount"] = data["likes"];
+      });
+
+      // Perform above process for first stock if there are two.
+      if (doCompare) {
+        stockModel.find({
+          stock: {
+            $eq: reqData["stockTwo"]
+          }
+        }, function (err, data) {
+          if (err) {
+            console.log(err);
+            return;
+          }
+
+          // Add a like if user wnats to.
+          if (reqData["like"] && reqData["like"] == true) {
+            data["likes"] += 1;
+
+            data.save(function (err, data) {
+              if (err) {
+                console.log(err);
+                return;
+              }
+
+              console.log("Saved like for Stock 2:" + data);
+            });
+          }
+
+          reqData["stockTwoLikeCount"] = data["likes"];
+        });
+      }
+
+      console.log("Data 1: " + JSON.stringify(reqData));
+
+      //
+      // * ACQUIRE STOCK INFORMATION BY USING HTTP GET.
+      // * THEN, RETURN DATA TO USER.
+      //
+
+      var url = 'https://finance.google.com/finance/info?q=' + reqData["stockOne"];
+
+      if (doCompare) {
+        url = url + '%3a' + reqData["stockTwo"]
+      }
+
+      https.get(url, (resp) => {
+        //console.log("RESP: " + resp + " " + url);
+
+        let data = '';
+
+        // A chunk of data has been recieved.
+        resp.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        // The whole response has been received. Print out the result.
+        resp.on('end', () => {
+          // Currently, google is blocking my requests. So, return jibberish prices for now.
+          // when we get good data parse in a proper price response var.
+          console.log("Data 2: " + data);
+
+          var fakeData;
+
+          if (!doCompare) {
+            fakeData = {
+              stock: reqData["stock"],
+              price: '23.10',
+              likes: reqData["stockOneLikeCount"]
+            };
+          } else {
+            fakeData = [{
+              stock: reqData["stock"],
+              price: '23.10',
+              rel_likes: 0 - reqData["stockTwoLikeCount"] + reqData["stockOneLikeCount"]
+            }, {
+              stock: reqData["stock"],
+              price: '570.10',
+              rel_likes: 0 - reqData["stockOneLikeCount"] + reqData["stockTwoLikeCount"]
+            }];
+          }
+          
+          console.log("Fake Data: " + fakeData);
+          res.status(200).send(fakeData);
+          return;
+        });
+      }).on("error", (err) => {
+        console.log("Error: " + err.message);
+      });
+    });
+};

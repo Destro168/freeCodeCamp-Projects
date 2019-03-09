@@ -1,0 +1,390 @@
+<!DOCTYPE HTML>
+<html>
+
+<!-- https://www.reddit.com/r/videos/comments/adk8lq/dave_chappelle_how_old_is_15_really/
+  Rogers $25/month for 500mpbs and got IPTV
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Scatter Plot Project">
+  <meta name="keywords" content="Scatter,Plot,FreeCodeCamp,Project">
+  <meta name="author" content="Donad Abdullah-Robinson">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Visualizing Data - Scatter Plot!</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
+  <script src="d3.min.js"></script>
+  <script src="main.js"></script>
+</head>
+
+<body>
+  <h1 id="title">Visualize Data with a Scatter Plot Project</h1>
+  <p>Author's Note: There were two highlights to this project.
+    First, the labels on this project dynamically resize based on the text in the 'doping' field of each athelete's
+    data object.
+    Second, this project really challenged my ability to place very many unique elements onto the SVG canvas while
+    keeping my code clean and organized.
+    Overall, I'm very satisfied with the final outcome of this project.
+</body>
+
+<script>
+  function getMinsFromTime(x) {
+    return parseInt(x.substring(0, 2));
+  }
+
+  function getSecsFromTime(x) {
+    return parseInt(x.substring(3, 5));
+  }
+
+  function getDateFromMinSec(x) {
+    return new Date(0, 0, 0, 0, getMinsFromTime(x), getSecsFromTime(x));
+  }
+
+  function getData() {
+
+    //
+    // Load and initialize raw data from github (or main.js if offline).
+    //
+    
+    const url = "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json";
+
+    // Future Learning Sources: https://www.w3schools.com/xml/xml_http.asp
+    req = new XMLHttpRequest();
+    req.open("GET", url, true);
+    req.send();
+    req.onload = function () {
+      // Get data and store in variable.
+      const dataset = JSON.parse(req.responseText);
+
+      //
+      // Variable Initialization. (Time to actually perform SVG tasks with data.)
+      //
+
+      // Time values for y-axis.
+      var xAxisValues = [];
+
+      // Years for x-axis.
+      var yAxisValues = [];
+
+      dataset.forEach((v, i) => {
+        xAxisValues.push(v["Year"]);
+        yAxisValues.push(v["Time"]);
+      })
+
+      //
+      // Set up scales, SVG canvas size and padding.
+      //
+
+      const w = 1000;
+      const h = 764;
+      const padding = 60;
+      const barPadding = padding + 10;
+
+      // When setting up scales, we subtract by small numbers to give room for axes. (-1 and -10 used below respectively)
+      const xScale = d3.scaleLinear()
+        .domain(
+          [d3.min(xAxisValues) - 1, d3.max(xAxisValues)]
+        )
+        .range([padding, w - padding * 5]); // TODO, see about removing the *5.
+
+      const yScale = d3.scaleTime()
+        .domain([
+          d3.min(yAxisValues, (d) => {
+            var x = getDateFromMinSec(d);
+            x.setSeconds(x.getSeconds() - 22);
+            x.setMilliseconds(x.getMilliseconds() - 200);
+            return x;
+          }), d3.max(yAxisValues, (d) => getDateFromMinSec(d))
+        ])
+        .range([h, padding]);
+
+      //
+      // Begin adding SVGs.
+      //
+
+      const svg = d3.select("body")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h)
+        .style("background-color", "#eeeeee");
+
+      // Add dots.
+      svg.selectAll("circle")
+        .data(dataset)
+        .enter()
+        .append("circle")
+        .attr("class", "dot")
+        .attr("data-xvalue", (d, i) => xAxisValues[i])
+        .attr("data-yvalue", (d, i) => getDateFromMinSec(yAxisValues[i]))
+        .attr("cx", (d, i) => xScale(xAxisValues[i]))
+        .attr("cy", (d, i) => yScale(getDateFromMinSec(yAxisValues[i])))
+        .attr("r", 5)
+        .style("background-color", "black")
+        .on("mouseover", (d, i) => {
+          d3.select('.tooltipId' + i).style('fill', 'black');
+          d3.select('.tooltipBgId' + i).style("fill", "#c4daff");
+        }).on("mouseout", (d, i) => {
+          d3.selectAll('.bar').style("fill", "blue");
+          d3.select('.tooltipId' + i).style('fill', 'none');
+          d3.select('.tooltipBgId' + i).style("fill", "none");
+        });
+
+
+      //
+      // * Add the axes
+      //
+
+      // Add y-axis.
+      const yAxis = d3.axisLeft(yScale)
+        .tickFormat(d3.timeFormat("%M:%S"));
+
+      svg.append("g")
+        .attr("transform", "translate(" + padding + ",0)")
+        .attr("class", "tick")
+        .call(yAxis)
+        .attr("id", "y-axis");
+
+      // Add 'the blob', hahaha!
+      svg.append("rect")
+        .attr("id", "theBlob")
+        .attr("x", (d, i) => xScale(xAxisValues[i]) - 200)
+        .attr("y", (d, i) => {
+          var x = getDateFromMinSec(yAxisValues[i]);
+          x.setSeconds(x.getSeconds() - 6);
+          return yScale(x);
+        })
+        .attr('height', '1200px')
+        .attr('width', '1200px')
+        .style('fill', '#eeeeee');
+
+      // Add x-axis
+      var xAxis = d3.axisBottom(xScale)
+        .tickFormat(d3.format(''));
+
+      svg.append("g")
+        .attr("transform", "translate(0," + (h - padding) + ")")
+        .attr("class", "tick")
+        .call(xAxis)
+        .attr("id", "x-axis");
+
+
+      //
+      // * Add the legend, axis descriptions and title.
+      //
+
+      // We use base coordinates for the legend and
+      // then position everything relative to them.
+      var legendX = 850;
+      var legendY = 300;
+
+      // Add the two boxes.
+      svg.append("rect")
+        .attr('id', 'legend')
+        .attr("x", legendX)
+        .attr("y", legendY)
+        .attr("height", "16px")
+        .attr("width", "16px")
+        .style('fill', 'green');
+
+      svg.append("rect")
+        .attr("x", legendX)
+        .attr("y", legendY + 50)
+        .attr("height", "16px")
+        .attr("width", "16px")
+        .style('fill', 'green');
+
+      // Add the text.
+      svg.append("text")
+        .attr("x", legendX - 50)
+        .attr("y", legendY + 14)
+        .attr("height", "16px")
+        .attr("width", "16px")
+        .text("Doped");
+
+      svg.append("text")
+        .attr("x", legendX - 80)
+        .attr("y", legendY + 64)
+        .attr("height", "16px")
+        .attr("width", "16px")
+        .text("Didn't dope");
+
+      // Now we add the two axis descriptions and title.
+      svg.append("text")
+        .attr("x", 350)
+        .attr("y", 740)
+        .attr("height", "16px")
+        .attr("width", "16px")
+        .text("Year");
+
+      svg.append("text")
+        .attr("x", -400)
+        .attr("y", 10)
+        .attr("height", "16px")
+        .attr("width", "16px")
+        .attr("transform", "rotate(270)")
+        .text("Minutes:Seconds");
+
+      svg.append("text")
+        .attr("x", 350)
+        .attr("y", 35)
+        .attr("height", "16px")
+        .attr("width", "16px")
+        .text("Athelete Doping Stats");
+
+      //
+      // * Time to add tooltips.
+      // * We first use function 'getDopeObj' to set multiple tooltip variables at once rather than sporadically throughout attr methods.
+      // * Then, we add the tooltips.
+      //
+
+      // This function is used to create tooltip data based on the doping field of each athelete's.
+      // The map function call following this definition demonstrates this function's purpose.
+      const getDopeObj = (data) => {
+        // Variable Initializations.
+        var dopeData = {
+          finalDope: [],
+          maxWidth: '',
+          maxHeight: ''
+        }
+
+        var dopeSplit = data.trim().split(" ");
+        var dopingLines = [];
+        var dopeIndex = -1;
+
+        for (var k = 0; k < dopeSplit.length; k++) {
+          if (k % 4 == 0) {
+            dopeIndex++;
+            dopingLines[dopeIndex] = [];
+          }
+
+          dopingLines[dopeIndex] = dopingLines[dopeIndex].concat([dopeSplit[k]]);
+        }
+
+        dopingLines.forEach((v, i) => {
+          if (dopeData.finalDope[i] == undefined) {
+            dopeData.finalDope[i] = '';
+          }
+
+          dopeData.finalDope[i] += v.join(' ');
+        })
+
+        dopeData.finalDope.forEach(v => {
+          if (v.length > dopeData.maxWidth) {
+            dopeData.maxWidth = v.length;
+          }
+        });
+
+        if (dopeData.maxWidth == 0) {
+          dopeData.maxWidth = 25;
+        }
+
+        var dopeMod = 0;
+
+        switch (dopeData.finalDope.length) {
+          case 1:
+            dopeMod = 55;
+            break;
+          case 2:
+            dopeMod = 54;
+            break;
+          case 3:
+            dopeMod = 44;
+            break;
+          case 4:
+            dopeMod = 37;
+            break;
+          default:
+            dopeMod = 32;
+            break;
+        }
+
+        dopeData.maxWidth = (dopeData.maxWidth * 8).toString().concat('px');
+        dopeData.maxHeight = ((dopeData.finalDope.length * dopeMod) + 25).toString().concat('px');
+
+        return dopeData;
+      }
+
+      // Acquire all of our tooltip data by mapping our starting data to the function getDopeObj.
+      var dopeObjArray = dataset.map(v => getDopeObj(v["Doping"]));
+
+      // Add tooltip backgrounds. - Godly stackoverflow solution helped me to put these at my code's bottom without errors:
+      // https://stackoverflow.com/questions/45789020/d3-skips-first-index-in-an-array-when-appending-circles
+      svg.selectAll(null)
+        .data(dataset)
+        .enter()
+        .append("rect")
+        .attr('id', 'tooltipBg')
+        .attr("class", (d, i) => "tooltipBg tooltipBgId" + i)
+        .style('fill', 'none')
+        .attr('height', (d, i) => dopeObjArray[i]["maxHeight"])
+        .attr('width', (d, i) => dopeObjArray[i]["maxWidth"])
+        .attr("x", (d, i) => xScale(xAxisValues[i]) + 10)
+        .attr("y", (d, i) => {
+          var x = getDateFromMinSec(yAxisValues[i]);
+          x.setSeconds(x.getSeconds() + 15);
+          return yScale(x);
+        });
+
+      // Add tooltips.
+      svg.selectAll(null)
+        .data(xAxisValues)
+        .enter()
+        .append("text")
+        .attr('id', 'tooltip')
+        .attr("class", (d, i) => "tooltip tooltipId" + i)
+        .style('fill', 'none')
+        .attr("x", (d, i) => xScale(xAxisValues[i] - 200))
+        .attr("y", (d, i) => {
+          var x = getDateFromMinSec(yAxisValues[i]);
+          x.setSeconds(x.getSeconds() - 6);
+          return yScale(x);
+        })
+        .html((d, i) => {
+          // Variable Initializations.
+          const yValIncrement = 5;
+          const lines = [
+            dataset[i]["Name"],
+            dataset[i]["Nationality"],
+            'Year: ' + dataset[i]["Year"],
+            'Time: ' + dataset[i]["Time"],
+            '',
+            ...dopeObjArray[i]["finalDope"]
+          ];
+          var yVal = 0;
+          var tooltipText = '';
+
+          // This function encapsulates a string of text in tpsan tags with scaled x and y values.
+          // text: text to encapsulate
+          // yStart: A modifier used to specify the y-pos of text. Higher values move text downwards on the SVG canvas.
+          function tSpanText(text, yStart) {
+            var y = getDateFromMinSec(yAxisValues[i]);
+            y.setSeconds(y.getSeconds() - yStart);
+
+            return "<tspan x=" + (xScale(xAxisValues[i]) + 15) + " y=" + (yScale(y) - 50) + ">" + text + "</tspan>";
+          }
+
+          // Format each line of text and concat it onto our final variable tooltipText.
+          lines.forEach(v => {
+            tooltipText += (tSpanText(v, yVal += yValIncrement));
+          })
+
+          return tooltipText;
+        });
+
+      // Just return at the end.
+      return null;
+    };
+
+    return null;
+  };
+
+  getData();
+</script>
+
+<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+
+</html>

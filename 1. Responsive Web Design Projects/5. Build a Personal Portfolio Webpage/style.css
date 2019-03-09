@@ -1,0 +1,13 @@
+
+  /* General CSS */
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: rgb(153, 192, 207);
+  }
+  
+  /* Sidebar CSS */
+  

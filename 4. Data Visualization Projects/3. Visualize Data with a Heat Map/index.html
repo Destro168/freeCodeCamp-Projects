@@ -1,0 +1,347 @@
+<!DOCTYPE HTML>
+<html>
+
+<!-- https://www.reddit.com/r/videos/comments/adk8lq/dave_chappelle_how_old_is_15_really/
+  Rogers $25/month for 500mpbs and got IPTV
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Heat Map Project">
+  <meta name="keywords" content="Heat,Map,FreeCodeCamp,Project">
+  <meta name="author" content="Donad Abdullah-Robinson">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Visualizing Data - Heat Map!</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
+  <script src="d3.min.js"></script>
+  <script src="main.js"></script>
+</head>
+
+<body>
+  <h1 id="title">Visualize Data with a Heat Map Project</h1>
+  <p id="description">This is a heat map of temperatures for some region over a period of years.</p>
+  <p>Author's Note: This project was substantially easier than the Scatter Plot Project since most of the boiler-place
+    code was already written. But, there was one big highlight to this project: The Legend.
+    
+    I 'had' to nest the sub-elements for the legend under each other, so I had to learn how to nest elements programmatically with d3.js.
+
+    Apparently, this is kind of a pain to do for the first time from scratch. However, after a lot of trial and error, I managed to figure out roughly how D3.js works and craft+implement a good solution.</p>
+</body>
+
+<script>
+  const colors = ['blue', 'yellow', 'orange', 'red'];
+  const borders = [-1, 0, 1];
+
+  /**
+   * Takes an integer month and returns a date from it.
+   */
+  function getDateFromMonth(x) {
+    return new Date(0, x - 1);
+  }
+
+  function getData() {
+    //
+    // Load and initialize raw data from github (or main.js if offline).
+    //
+
+    /* UNCOMMENT FOR FINAL 
+
+    const url = "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json";
+
+    // Future Learning Sources: https://www.w3schools.com/xml/xml_http.asp
+    req = new XMLHttpRequest();
+    req.open("GET", url, true);
+    req.send();
+    req.onload = function () {
+      // Get data and store in variable.
+      //const dataset = JSON.parse(req.responseText);
+
+      */
+
+    const dataset = x;
+
+    //
+    // Variable Initialization. (Time to actually perform SVG tasks with data.)
+    //
+
+    // X-axis = year. Y-Axis = month.
+    var xAxisValues = [];
+    var yAxisValues = [];
+
+    dataset["monthlyVariance"].forEach((v, i) => {
+      xAxisValues.push(v["year"]);
+      yAxisValues.push(getDateFromMonth(v["month"]));
+    })
+
+    //
+    // Set up scales, SVG canvas size and padding.
+    //
+
+    const w = 1000;
+    const h = 764;
+    const padding = 60;
+
+    // When setting up scales, we subtract by small numbers to give room for axes. (-1 and -10 used below respectively)
+    const xScale = d3.scaleLinear()
+      .domain(
+        [d3.min(xAxisValues) - 1, d3.max(xAxisValues)]
+      )
+      .range([padding, w - padding * 4]);
+
+    const yScale = d3.scaleTime()
+      .domain([getDateFromMonth(1), getDateFromMonth(12)])
+      .range([h - padding, padding + 50]);
+
+    //
+    // Begin adding SVGs.
+    //
+
+    const svg = d3.select("body")
+      .append("svg")
+      .attr("width", w)
+      .attr("height", h)
+      .style("background-color", "#eeeeee");
+
+    // Add the actual cells for representing heat data.
+    svg.selectAll("rect")
+      .data(dataset["monthlyVariance"])
+      .enter()
+      .append("rect")
+      .attr('class', 'cell')
+      .attr('data-year', (d, i) => d["year"])
+      .attr('data-month', (d, i) => d["month"] - 1)
+      .attr('data-temp', (d, i) => d["variance"])
+      .attr('x', (d, i) => xScale(xAxisValues[i]) - 2)
+      .attr('y', (d, i) => yScale(yAxisValues[i]) - padding)
+      .attr('height', padding + 'px')
+      .attr('width', '3px')
+      .style('fill', (d, i) => {
+        for (var i = 0; i < borders.length; i++) {
+          if (d["variance"] < borders[i]) {
+            return colors[i];
+          }
+        }
+
+        return colors[colors.length - 1];
+      })
+      .on("mouseover", (d, i) => {
+        d3.select('.tooltipId' + i).style('fill', 'black');
+        d3.select('.tooltipBgId' + i).style("fill", "#c4daff");
+      }).on("mouseout", (d, i) => {
+        d3.select('.tooltipId' + i).style('fill', 'none');
+        d3.select('.tooltipBgId' + i).style("fill", "none");
+      });
+
+    //
+    // * Add the axes
+    //
+
+    // Add y-axis.
+    const yAxis = d3.axisLeft(yScale)
+      .tickFormat(d3.timeFormat("%B"));
+
+    svg.append("g")
+      .attr("transform", "translate(" + padding + ",0)")
+      .attr("class", "tick")
+      .call(yAxis)
+      .attr("id", "y-axis");
+
+    // Add x-axis
+    var xAxis = d3.axisBottom(xScale)
+      .tickFormat(d3.format(''));
+
+    svg.append("g")
+      .attr("transform", "translate(0," + (h - padding) + ")")
+      .attr("class", "tick")
+      .call(xAxis)
+      .attr("id", "x-axis");
+
+
+    //
+    // * Add the legend, axis descriptions and title.
+    // *
+    // * Author's Note: So, D3 has these weird interactions where apparently
+    // *   you lose elements when appending child elements to parents. Fun stuff.
+    // *   My solution was to just append a new svg to the body and make it seemlessly
+    // *   merge it to the bottom of the other one. Easy.
+    //
+
+    // We use base coordinates for the legend and then position everything relative to them.
+    var legendX = 0;
+    var legendY = 0;
+    var cubeSizeBase = 40;
+    var cubeSize = (cubeSizeBase).toString().concat('px');
+    var cubeBgsize = (cubeSizeBase + 2).toString().concat('px');
+
+    // Add base svg.
+    const newSVG = d3.select("body")
+      .append('svg')
+      .attr('id', 'legend')
+      .attr("width", w)
+      .attr("height", 70)
+      .style('margin-top', '-5px')
+      .style("background-color", "#eeeeee");
+
+    // Add the legend color boxes and borders.
+    for (var i = 0; i < colors.length; i++) {
+      // Background boxes
+      newSVG.append("rect")
+        .attr('class', (d) => 'legend'.concat(i))
+        .attr("x", (d) => legendX + (i * cubeSizeBase) + 300)
+        .attr("y", legendY)
+        .attr("height", cubeBgsize)
+        .attr("width", cubeBgsize)
+        .style('fill', 'black');
+        
+      // Colored boxes
+      newSVG.append("rect")
+        .attr('class', (d) => 'legend'.concat(i))
+        .attr("x", (d) => legendX + (i * cubeSizeBase) + 300 + 1)
+        .attr("y", legendY + 1)
+        .attr("height", cubeSize)
+        .attr("width", cubeSize)
+        .style('fill', (d) => colors[i])
+    }
+
+    // Add the border texts.
+    for (var i = 0; i < borders.length; i++) {
+      newSVG.append("text")
+        .attr('id', 'legend')
+        .attr("x", legendX + (i * cubeSizeBase) + 300 + 23)
+        .attr("y", legendY + padding)
+        .attr("height", cubeSize)
+        .attr("width", cubeSize)
+        .style('fill', 'black')
+        .text(borders[i].toString().concat('°C'));
+    }
+
+    /*
+    for (var i = 0; i < colors.length; i++) {
+      
+      svg.append("rect")
+        .attr('class', () => 'legend'.concat(i))
+        .attr("x", legendX + (i * cubeSizeBase))
+        .attr("y", legendY)
+        .attr("height", cubeBgsize)
+        .attr("width", cubeBgsize)
+        .style('fill', 'black');
+
+      
+      svg.append("rect")
+        .attr('class', () => 'legend'.concat(i))
+        .attr("x", legendX + (i * cubeSizeBase) + 1)
+        .attr("y", legendY + 1)
+        .attr("height", cubeSize)
+        .attr("width", cubeSize)
+        .style('fill', colors[i]);
+    }
+    */
+
+    /*
+    // Add the legend text.
+    
+    */
+
+    // Now we add the two axis descriptions and title.
+    svg.append("text")
+      .attr("x", 350)
+      .attr("y", 740)
+      .attr("height", "16px")
+      .attr("width", "16px")
+      .text("Year");
+
+    svg.append("text")
+      .attr("x", -400)
+      .attr("y", 10)
+      .attr("height", "16px")
+      .attr("width", "16px")
+      .attr("transform", "rotate(270)")
+      .text("Months");
+
+    svg.append("text")
+      .attr("x", 350)
+      .attr("y", 35)
+      .attr("height", "16px")
+      .attr("width", "16px")
+      .text("Heat Map");
+
+    //
+    // * Time to add tooltips.
+    //
+
+    // Add tooltip backgrounds.
+    svg.selectAll(null)
+      .data(dataset["monthlyVariance"])
+      .enter()
+      .append("rect")
+      .attr('id', 'tooltipBg')
+      .attr("class", (d, i) => "tooltipBg tooltipBgId" + i)
+      .style('fill', 'none')
+      .attr('height', (d, i) => '60px')
+      .attr('width', (d, i) => '140px')
+      .attr("x", (d, i) => xScale(xAxisValues[i]) + 10)
+      .attr("y", (d, i) => yScale(yAxisValues[i]) - padding);
+
+    // Add tooltips.
+    svg.selectAll(null)
+      .data(dataset["monthlyVariance"])
+      .enter()
+      .append("text")
+      .attr('id', 'tooltip')
+      .attr("class", (d, i) => "tooltip tooltipId" + i)
+      .style('fill', 'none')
+      .attr('height', (d, i) => '60px')
+      .attr('width', (d, i) => '140px')
+      .attr("x", (d, i) => xScale(xAxisValues[i]) + 10)
+      .attr("y", (d, i) => yScale(yAxisValues[i]) + 10)
+      .html((d, i) => {
+        // Constant array of months for future use.
+        const monthArray = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+          'October', 'November', 'December'
+        ];
+
+        // The variables controlling tooltip data.
+        var tooltipText = '';
+        var lines = [
+          d["year"].toString().concat(' - ').concat(monthArray[dataset["monthlyVariance"][i]["month"] - 1]),
+          (dataset["baseTemperature"] - d["variance"]).toFixed(3).toString().concat(' °C'),
+          d["variance"].toString().concat(' °C')
+        ]
+
+        // Variables for formatting each line's tspan values.
+        var yVal = 0;
+        const yValIncrement = 18;
+
+        // This function encapsulates a string of text in tpsan tags with scaled x and y values.
+        // text: text to encapsulate
+        // yStart: A modifier used to specify the y-pos of text. Higher values move text downwards on the SVG canvas.
+        function tSpanText(text, yStart) {
+          var y = yScale(yAxisValues[i]) + yStart;
+          return "<tspan x=" + (xScale(xAxisValues[i]) + 15) + " y=" + (y - padding) + ">" + text + "</tspan>";
+        }
+
+        // Format each line of text and concat it onto our final variable tooltipText.
+        lines.forEach(v => {
+          tooltipText += (tSpanText(v, yVal += yValIncrement));
+        })
+
+        return tooltipText;
+      });
+
+    return null;
+  };
+
+  /* UNCOMMENT FOR FINAL 
+  }
+  */
+
+  getData();
+</script>
+
+<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+
+</html>

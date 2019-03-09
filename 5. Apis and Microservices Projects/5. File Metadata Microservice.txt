@@ -1,0 +1,58 @@
+---------------------------------------------------------------------------
+API Project: File Metadata Microservice
+---------------------------------------------------------------------------
+Example Usage:
+
+I can submit a form object that includes a file upload.
+The from file input field has the "name" attribute set to "upfile". We rely on this in testing.
+When I submit something, I will receive the file name, and size in bytes within the JSON response.
+
+---------------------------------------------------------------------------
+
+Mine: https://glitch.com/edit/#!/laser-saturday?path=server.js:9:62
+Share: https://glitch.com/edit/#!/laser-saturday
+Live: https://laser-saturday.glitch.me/
+
+Sample GET:
+
+---------------------------------------------------------------------------
+CODE:
+---------------------------------------------------------------------------
+
+* server.js:
+
+'use strict';
+
+var express = require('express');
+var cors = require('cors');
+
+var app = express();
+
+app.use(cors());
+app.use('/public', express.static(process.cwd() + '/public'));
+
+app.get('/', function (req, res) {
+     res.sendFile(process.cwd() + '/views/index.html');
+  });
+
+app.get('/hello', function(req, res){
+  res.json({greetings: "Hello, API"});
+});
+
+app.listen(process.env.PORT || 3000, function () {
+  console.log('Node.js listening ...');
+});
+
+// require and use "multer"...
+var multer  = require('multer')
+var upload = multer({ dest: 'uploads/' })
+ 
+// (DAR) - Post a file to analyze
+app.post('/api/fileanalyse', upload.single('upfile'), function (req,res) {
+  // Return the response object containing original name and file size.
+  res.json({
+    filieName: req.file.originalname,
+    sizeInBytes: req.file.size
+  });
+  return;
+});

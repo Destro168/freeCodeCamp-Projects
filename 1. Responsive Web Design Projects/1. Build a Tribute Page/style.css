@@ -1,0 +1,53 @@
+#main {
+    font-family: Calibri;
+}
+
+img {
+    max-width: 100%; 
+    display: block; 
+    height: auto;
+    margin: auto;
+}
+
+div.bg1 {
+    padding-top: 1px;
+    padding-bottom: 1px;
+
+    background-color: rgb(129, 230, 255);
+    margin: 0 auto;
+    max-width: 1024px;
+}
+
+div.bg2 {
+    padding: 5px;
+    background-color: rgb(240, 240, 240);
+    margin-top: 5px;
+}
+
+div.bg3 {
+    padding: 5px;
+    background-color: rgb(205, 205, 205);
+}
+
+*.centerElements {
+    text-align: center;
+}
+
+div.tributeSection {
+    max-width: 1024px;
+    margin: 0 auto;
+    text-align: right;
+}
+
+#tribute-info {
+    text-align: left;
+}
+
+p.header {
+    font-size: 34px;
+}
+
+p.sub-header {
+    font-size: 20px;
+    font-style: italic;
+}

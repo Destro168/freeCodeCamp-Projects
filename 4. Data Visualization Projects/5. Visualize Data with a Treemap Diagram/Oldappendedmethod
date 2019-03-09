@@ -1,0 +1,290 @@
+<!DOCTYPE HTML>
+<html>
+
+<!-- https://www.reddit.com/r/videos/comments/adk8lq/dave_chappelle_how_old_is_15_really/
+  Rogers $25/month for 500mpbs and got IPTV
+  Quokka, Visbug, Whitespace rendering.
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Tree Map Project">
+  <meta name="keywords" content="Tree,Map,FreeCodeCamp,Project">
+  <meta name="author" content="Donad Abdullah-Robinson">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Visualizing Data - Tree Map!</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
+  <script src="d3.min.js"></script>
+  <script src="main.js"></script>
+
+  <svg id="svg1" style="margin: 0 auto; display: block;"></svg>
+</head>
+
+
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: rgb(77, 117, 133);
+    font-size: 12px;
+  }
+  
+  .legend {
+    stroke: white;
+  }
+</style>
+
+
+<body>
+  <h1 id="title">Visualize Data with a Tree Map Project</h1>
+  <p id="description">This is a tree map of video game sales.</p>
+  <p>Author's Note: Thank you so much https://d3indepth.com/layouts/ once again.</p>
+
+  <svg width="1500" height="175">
+    <g id="legend" class="legend"></g>
+  </svg>
+
+  <svg width="1500" height="4200">
+    <g id="treeMap" class="treeMap"></g>
+  </svg>
+</body>
+
+<script>
+  // Helper function to get an object of random colors.
+  function getCategoryColorDataObj(x) {
+
+    function getRandomColor() {
+      const hexChars = ['a', 'b', 'c', 'd', 'e', 'f'];
+      var arr = [];
+      var rand = 0;
+
+      for (var i = 0; i < 6; i++) {
+        rand = Math.floor(Math.random() * 16);
+
+        if (rand >= 10) {
+          arr[i] = hexChars[rand - 10];
+        } else {
+          arr[i] = rand;
+        }
+      }
+
+      return arr.join('');
+    }
+
+    var categoryColorData = {};
+
+    x.forEach(v => {
+      if (v["name"]) {
+        categoryColorData[v["name"]] = getRandomColor();
+      }
+    });
+
+    return categoryColorData;
+  };
+
+  // Converts an array of words into an array of lines with length 'wordsPerLineLimit'.
+  function convertWordsToLines(textArr, wordsPerLineLimit) {
+    var wordModCounter = 0;
+    var lineDataArray = [''];
+
+    for (var i = 0; i < textArr.length; i++) {
+      if (i % wordsPerLineLimit == 0) {
+        wordModCounter++;
+        lineDataArray[wordModCounter] = '';
+      }
+
+      lineDataArray[wordModCounter] += ' ' + textArr[i];
+    }
+
+    return lineDataArray;
+  }
+
+  // Wraps every element of textArr with a tSpan.
+  function wrapWithTspan(textArr, xStart, yStart) {
+    var text = '';
+
+    function tSpanText(text, y) {
+      return "<tspan x=" + xStart + " y=" + y + ">" + text + "</tspan>";
+    }
+
+    textArr.forEach(v => text += tSpanText(v, yStart += 18));
+
+    return text;
+  }
+
+  //
+  // * Create the Tree Map.
+  //
+
+  function createTreeMap() {
+    // Variable Initialization.
+    var root = d3.hierarchy(x);
+    var treemapLayout = d3.treemap();
+    var categoryColorData = getCategoryColorDataObj(x["children"]);
+
+    //
+    // * Setup treemap data using mandatory steps.
+    //
+
+    treemapLayout
+      .size([1500, 4200]);
+
+    root.sum(function (d) {
+      return d.value;
+    });
+
+    treemapLayout(root);
+
+    //
+    // * Add the legend
+    //
+
+    // We use base coordinates for the legend and then position everything relative to them.
+    var legendX = -175;
+    var legendY = 10;
+    var legendXMod = 0;
+    var legendYMod = 0;
+    var paddingOffset = 100;
+
+    var cubeSizeBase = 40;
+    var cubeSize = (cubeSizeBase).toString().concat('px');
+    var cubeBgsize = (cubeSizeBase + 2).toString().concat('px');
+
+    // Add base svg.
+    const newSVG = d3.select("g.legend")
+      .append('svg')
+      .attr('id', 'legend')
+      .attr("width", 1500)
+      .attr("height", 175)
+      .style('margin-top', '-5px')
+      .style("background-color", "#eeeeee");
+
+    // Add the legend color boxes and borders.
+    for (var i = 0; i < x["children"].length; i++) {
+
+      if (i % 3 == 0) {
+        legendX += 175;
+        legendYMod = 0;
+      } else {
+        legendYMod += 50;
+      }
+
+      // Background boxes
+      newSVG.append("rect")
+        .attr('class', (d) => 'legendTileBg'.concat(i))
+        .attr("x", (d) => legendX + cubeSizeBase)
+        .attr("y", legendY + legendYMod)
+        .attr("height", cubeBgsize)
+        .attr("width", cubeBgsize)
+        .style('fill', 'black');
+
+      // Colored boxes
+      newSVG.append("rect")
+        .attr('class', (d) => 'legend-item')
+        .attr("x", (d) => legendX + cubeSizeBase)
+        .attr("y", legendY + legendYMod)
+        .attr("height", cubeSize)
+        .attr("width", cubeSize)
+        .style('fill', d => {
+          return categoryColorData[x["children"][i]["name"]];
+        });
+
+      newSVG.append("text")
+        .attr('class', 'legendText'.concat(i))
+        .attr("x", (d) => legendX + cubeSizeBase * 2.2)
+        .attr("y", legendY + legendYMod + cubeSizeBase / 1.6)
+        .attr("height", cubeSize)
+        .attr("width", cubeSize)
+        .style('fill', 'black')
+        .text(x["children"][i]["name"]);
+    }
+
+    //
+    // * Add the TreeMap
+    //
+
+    // Create canvas.
+    // Note: Use root.leaves! Thank you: https://www.freecodecamp.org/forum/t/treemap-test-5-6/227929/6
+    var nodes = d3.select('g.treeMap')
+      .selectAll('g')
+      .data(root.leaves())
+      .enter()
+      .append('g')
+      .attr('transform', function (d) {
+        return 'translate(' + [d.x0, d.y0] + ')'
+      });
+
+    // Add tiles.
+    nodes.append('rect')
+      .attr('id', 'tile')
+      .attr('class', 'tile')
+      .attr('data-category', d => d["data"]["category"])
+      .attr('data-name', d => d["data"]["name"])
+      .attr('data-value', d => d["data"]["value"])
+      .attr('width', function (d) {
+        return d.x1 - d.x0;
+      })
+      .attr('height', function (d) {
+        return d.y1 - d.y0;
+      })
+      .style('fill', d => {
+        return categoryColorData[d["data"]["category"]];
+      })
+      .on("mouseover", (d, i) => {
+        d3.select('.tooltipId' + i).style('fill', 'black');
+        d3.select('.tooltipBgId' + i).style("fill", "#c4daff");
+      }).on("mouseout", (d, i) => {
+        d3.select('.tooltipId' + i).style('fill', 'none');
+        d3.select('.tooltipBgId' + i).style("fill", "none");
+      });
+
+    // Add text to each tile.
+    nodes.append('text')
+      .html(function (d, i) {
+        // Return our base name data in line format (subFunc1) wrapped by tSpans (subFunc2).
+        return wrapWithTspan(convertWordsToLines(d.data.name.split(' '), Math.floor((d.x1 - d.x0) / 190) + 1), 5, -13);
+      });
+
+    //
+    // * Time to add tooltips.
+    //
+
+    // Add tooltip backgrounds.
+    nodes
+      .append("rect")
+      .attr('id', 'tooltipBg')
+      .attr("class", (d, i) => "tooltipBg tooltipBgId" + i)
+      .style('fill', 'none')
+      .attr('height', (d, i) => '300px')
+      .attr('width', (d, i) => '300px')
+      .attr("x", () => 20)
+      .attr("y", (d, i) => 50)
+      .on("mouseover", (d, i) => {
+        d3.select('.tooltipId' + i).style('fill', 'black');
+        d3.select('.tooltipBgId' + i).style("fill", "#c4daff");
+      }).on("mouseout", (d, i) => {
+        d3.select('.tooltipId' + i).style('fill', 'none');
+        d3.select('.tooltipBgId' + i).style("fill", "none");
+      });
+
+    // Add tooltips.
+    nodes.append("text")
+      .attr('id', 'tooltip')
+      .attr("class", (d, i) => "tooltip tooltipId" + i)
+      .style('fill', 'none')
+      .html((d, i) => {
+        // Return our base name data in line format (subFunc1) wrapped by tSpans (subFunc2).
+        return wrapWithTspan(convertWordsToLines(d.data.name.split(' '), Math.floor((d.x1 - d.x0) / 190) + 1), 20, 25);
+      });
+  };
+
+  // Call our main function to create a tree map.
+  createTreeMap();
+</script>
+
+<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+
+</html>

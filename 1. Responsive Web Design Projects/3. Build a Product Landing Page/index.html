@@ -1,0 +1,180 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Product Landing Page">
+  <meta name="author" content="Donad Abdullah-Robinson">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>My Survey Form</title>
+
+  <!-- Import Font Awesome -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
+    crossorigin="anonymous">
+
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+  <!--
+        <script src="main.js"></script>
+  -->
+
+  <!-- Codepen Link: https://codepen.io/anon/pen/xMjXZx -->
+</head>
+
+<body>
+  <!-- Scrolling page header. -->
+  <header id="header">
+    <div id="headerDivider"></div>
+
+    <nav id="nav-bar">
+      <span class="spanLeft">
+        <!-- No fake company logo to use. :*( -->
+        <img id="header-img" src="https://pbs.twimg.com/profile_images/447374371917922304/P4BzupWu.jpeg"></span>
+
+      <span class="spanRight">
+        <a href="#details" class="nav-link">Types</a>
+        <a href="#video" class="nav-link">Videos</a>
+        <a href="#threeCards" class="nav-link">Cards</a>
+      </span>
+    </nav>
+
+    <div id="headerDivider"></div>
+  </header>
+
+  <!-- Wrapper for the actual body of the web page. -->
+  <div id="bodyWrapper">
+
+    <!-- Enter email form section of web page. -->
+    <div class="formSection">
+      <h1>Amazing Food Creations</h1>
+      <form id="form" action="https://www.freecodecamp.com/email-submit">
+        <input name="email" type="email" id="email" value="" placeholder="Enter email">
+        <br /><br />
+        <input type="submit" id="submit" value="Get Info">
+      </form>
+    </div>
+
+    <br />
+
+    <!-- Product details. Image + Text combo. -->
+    <div id="details">
+      <!--
+       Font Awesome not working atm.
+      <i class="fas fa-carrot"></i>
+      <i class="fas fa-cookie-bite"></i>
+      <i class="fas fa-glass-cheers"></i>
+      -->
+      <div id="detailsRow">
+        <div id="detailsImage">
+          <p>[FA_Image 1]</p>
+        </div>
+        <div id="detailsText">
+          <h3>Delicious Carrots</h3>
+          <p>Made for rabbits with the most selective palette.</p>
+        </div>
+      </div>
+
+      <div id="detailsRow">
+        <div id="detailsImage">
+          <p>[FA_Image 2]</p>
+        </div>
+        <div id="detailsText">
+          <h3>Delicious Carrots</h3>
+          <p>Made for rabbits with the most selective palette</p>
+        </div>
+      </div>
+
+      <div id="detailsRow">
+        <div id="detailsImage">
+          <p>[FA_Image 3]</p>
+        </div>
+        <div id="detailsText">
+          <h3>Delicious Carrots</h3>
+          <p>Made for rabbits with the most selective palette</p>
+        </div>
+      </div>
+
+    </div>
+
+    <br />
+
+    <!-- Centered video for display -->
+    <div class="video">
+      <video id="video" controls>
+        <source src="movie.mp4" type="video/mp4">
+        <source src="movie.ogg" type="video/ogg">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <br />
+
+    <div id="threeCards">
+
+      <!-- A card. -->
+      <div class="card">
+
+        <!-- Card Header -->
+        <div class="cardTop">
+          <h3>Face</h3>
+        </div>
+
+        <!-- Card Body-->
+        <div class="cardBody">
+          <p>Generous Face</p>
+          <p>Glorious Face</p>
+          <p>Amazing Face</p>
+          <button>Select</button>
+        </div>
+
+      </div>
+
+      <!-- A card. -->
+      <div class="card">
+
+        <!-- Card Header -->
+        <div class="cardTop">
+          <h3>Face</h3>
+        </div>
+
+        <!-- Card Body-->
+        <div class="cardBody">
+          <p>Generous Face</p>
+          <p>Glorious Face</p>
+          <p>Amazing Face</p>
+          <button>Select</button>
+        </div>
+      </div>
+
+      <!-- A card. -->
+      <div class="card">
+
+        <!-- Card Header -->
+        <div class="cardTop">
+          <h3>Face</h3>
+        </div>
+
+        <!-- Card Body-->
+        <div class="cardBody">
+          <p>Generous Face</p>
+          <p>Glorious Face</p>
+          <p>Amazing Face</p>
+          <button>Select</button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <footer>
+        <a>Privacy</a> | 
+        <a>Terms</a> | 
+        <a>Contact</a>
+        <p>Copyright 2019, Original Faces</p>
+    </footer>
+  </div>
+
+</body>
+
+</html>

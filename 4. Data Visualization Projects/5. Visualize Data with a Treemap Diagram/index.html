@@ -1,0 +1,452 @@
+<!DOCTYPE HTML>
+<html>
+
+<!-- https://www.reddit.com/r/videos/comments/adk8lq/dave_chappelle_how_old_is_15_really/
+  Rogers $25/month for 500mpbs and got IPTV
+  Quokka, Visbug, Whitespace rendering.
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Tree Map Project">
+  <meta name="keywords" content="Tree,Map,FreeCodeCamp,Project">
+  <meta name="author" content="Donad Abdullah-Robinson">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Visualizing Data - Tree Map!</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
+  <script src="d3.min.js"></script>
+  <script src="main.js"></script>
+
+  <svg id="svg1" style="margin: 0 auto; display: block;"></svg>
+</head>
+
+
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: rgb(77, 117, 133);
+    font-size: 12px;
+  }
+
+  #tooltip {
+    position: absolute;
+    left: 0px;
+    top: 450px;
+    z-index: 1;
+    stroke: black;
+  }
+
+  #tooltipText {
+    stroke: none;
+  }
+  
+  #treeMap {
+    stroke: black;
+  }
+
+  .tileText {
+    stroke: none;
+  }
+</style>
+
+
+<body>
+  <h1 id="title">Visualize Data with a Tree Map Project</h1>
+  <p id="description">This is a tree map of video game sales.</p>
+  <p>Author's Note: Thank you so much https://d3indepth.com/layouts/ once again.</p>
+
+  <svg width="1500" height="175">
+    <g id="legend" class="legend"></g>
+  </svg>
+
+  <svg width="1500" height="4200">
+    <g id="treeMap" class="treeMap"></g>
+  </svg>
+</body>
+
+<script>
+  var g_MouseXPos;
+  var g_MouseYPos;
+
+  // A function that global mouse coords based on arg mouseEvent.
+  function findScreenCoords(mouseEvent) {
+
+    if (mouseEvent) {
+      //FireFox
+      g_MouseXPos = mouseEvent.clientX;
+      g_MouseYPos = mouseEvent.clientY;
+    } else {
+      //IE
+      g_MouseXPos = window.event.clientX;
+      g_MouseYPos = window.event.clientY;
+    }
+    
+    g_MouseXPos += window.pageXOffset + 20;
+    g_MouseYPos += window.pageYOffset - 450;
+    
+    if (g_MouseXPos > 1300) {
+      g_MouseXPos = 1300;
+    }
+
+    if (g_MouseYPos > 3900) {
+      g_MouseYPos = 3900;
+    }
+  }
+
+  function setTooltipHidden() {
+    d3.select('#tooltipText').style('fill', 'none');
+    d3.select('#tooltipBg').style("fill", "none");
+  }
+
+  function setTooltipVisible() {
+    d3.select('#tooltipText').style('fill', 'black');
+    d3.select('#tooltipBg').style("fill", "#c4daff");
+  }
+
+  function updateTooltipPosition() {
+    if (!g_MouseXPos || !g_MouseYPos) {
+      return;
+    }
+
+    d3.select('#tooltipText').attr("x", g_MouseXPos + 10);
+    d3.select('#tooltipText').attr("y", g_MouseYPos + 20);
+    d3.select('#tooltipBg').attr("x", g_MouseXPos);
+    d3.select('#tooltipBg').attr("y", g_MouseYPos);
+  }
+
+  // Helper function to get an object of random colors.
+  function getCategoryColorDataObj(x) {
+
+    function getRandomColor() {
+      const hexChars = ['a', 'b', 'c', 'd', 'e', 'f'];
+      var arr = [];
+      var rand = 0;
+
+      for (var i = 0; i < 6; i++) {
+        rand = Math.floor(Math.random() * 16);
+
+        if (rand >= 10) {
+          arr[i] = hexChars[rand - 10];
+        } else {
+          arr[i] = rand;
+        }
+      }
+
+      return arr.join('');
+    }
+
+    var categoryColorData = {};
+
+    x.forEach(v => {
+      if (v["name"]) {
+        categoryColorData[v["name"]] = getRandomColor();
+      }
+    });
+
+    return categoryColorData;
+  };
+
+  var categoryColorData = getCategoryColorDataObj(x["children"]);
+
+  // Converts an array of words into an array of lines with length 'wordsPerLineLimit'.
+  function convertWordsToLines(textArr, wordsPerLineLimit) {
+    var wordModCounter = -1;
+    var lineDataArray = [];
+
+    for (var i = 0; i < textArr.length; i++) {
+      if (i % wordsPerLineLimit == 0) {
+        wordModCounter++;
+        lineDataArray[wordModCounter] = '';
+        lineDataArray[wordModCounter] += textArr[i];
+      } else {
+        lineDataArray[wordModCounter] += ' ' + textArr[i];
+      }
+
+    }
+
+    return lineDataArray;
+  }
+
+  // Wraps every element of textArr with a tSpan.
+  function wrapWithTspan(textArr, xStart, yStart) {
+    var text = '';
+
+    function tSpanText(text, y) {
+      return "<tspan x=" + xStart + " y=" + y + ">" + text + "</tspan>";
+    }
+
+    textArr.forEach(v => text += tSpanText(v, yStart += 18));
+
+    return text;
+  }
+
+
+  //
+  // * Helper variables and data for tooltip creation.
+  //
+
+  // short for tooltipBoundaryData
+  var g_tooltipBoundaryData = {
+    x0: -1,
+    x1: -1,
+    y0: -1,
+    y1: -1
+  };
+
+  // This function is used by the tooltips to update tooltip text base don position.
+  function doMouseMove() {
+    // Always exit if g_MouseXPos and g_MouseYPos are not ready to be used.
+    if (!g_MouseXPos || !g_MouseYPos) {
+      return;
+    }
+    
+    // Always update tooltip position.
+    updateTooltipPosition();
+
+    // Otherwise, find which leaf it is in and update boundary data and node html.
+    for (let index = 0; index < root.leaves().length; index++) {
+      const element = root.leaves()[index];
+
+      if (g_MouseXPos >= element.x0 && g_MouseXPos <= element.x1 && g_MouseYPos >= element.y0 && g_MouseYPos <= element
+        .y1) {
+        // Update g_tooltipBoundaryData for future boundary checking.
+        g_tooltipBoundaryData.x0 = element.x0;
+        g_tooltipBoundaryData.x1 = element.x1;
+        g_tooltipBoundaryData.y0 = element.y0;
+        g_tooltipBoundaryData.xy1 = element.y1;
+
+        console.log("TEST");
+        // Update the html for the tooltip using found index.
+        d3.select('#tooltipText')
+          .html((d, i) => {
+            var text = [
+              ...convertWordsToLines(['Name: ', ...root.leaves()[index]["data"]["name"].split(' ')], 5),
+              'Category: '.concat(root.leaves()[index]["data"]["category"]),
+              'Value: '.concat(root.leaves()[index]["data"]["value"])
+            ];
+
+            // Return our base name data in line format (subFunc1) wrapped by tSpans (subFunc2).
+            return wrapWithTspan(text, g_MouseXPos + 10, g_MouseYPos);
+          });
+
+        d3.select('#tooltip')
+          .attr('data-value', root.leaves()[index]["data"]["value"]);
+
+        // Always return at this point to exit loop.
+        return;
+      }
+    }
+  }
+
+  function createLegend() {
+
+    //
+    // * Add the legend
+    //
+
+    // We use base coordinates for the legend and then position everything relative to them.
+    var legendX = -175;
+    var legendY = 10;
+    var legendXMod = 0;
+    var legendYMod = 0;
+    var paddingOffset = 100;
+
+    var cubeSizeBase = 40;
+    var cubeSize = (cubeSizeBase).toString().concat('px');
+    var cubeBgsize = (cubeSizeBase + 2).toString().concat('px');
+
+    // Add base svg.
+    const newSVG = d3.select("g.legend")
+      .append('svg')
+      .attr('id', 'legend')
+      .attr("width", 1500)
+      .attr("height", 175)
+      .style('margin-top', '-5px')
+      .style("background-color", "#eeeeee");
+
+    // Add the legend color boxes and borders.
+    for (var i = 0; i < x["children"].length; i++) {
+
+      if (i % 3 == 0) {
+        legendX += 175;
+        legendYMod = 0;
+      } else {
+        legendYMod += 50;
+      }
+
+      // Background boxes
+      newSVG.append("rect")
+        .attr('class', (d) => 'legendTileBg'.concat(i))
+        .attr("x", (d) => legendX + cubeSizeBase)
+        .attr("y", legendY + legendYMod)
+        .attr("height", cubeBgsize)
+        .attr("width", cubeBgsize)
+        .style('fill', 'black');
+
+      // Colored boxes
+      newSVG.append("rect")
+        .attr('class', (d) => 'legend-item')
+        .attr("x", (d) => legendX + cubeSizeBase)
+        .attr("y", legendY + legendYMod)
+        .attr("height", cubeSize)
+        .attr("width", cubeSize)
+        .style('fill', d => {
+          return categoryColorData[x["children"][i]["name"]];
+        });
+
+      newSVG.append("text")
+        .attr('class', 'legendText'.concat(i))
+        .attr("x", (d) => legendX + cubeSizeBase * 2.2)
+        .attr("y", legendY + legendYMod + cubeSizeBase / 1.6)
+        .attr("height", cubeSize)
+        .attr("width", cubeSize)
+        .style('fill', 'black')
+        .text(x["children"][i]["name"]);
+    }
+  }
+
+
+  //
+  // * Function to create the Tree Map.
+  //
+
+  function createTreeMap() {
+    //
+    // * Add the TreeMap
+    //
+
+    // Create canvas.
+    // Note: Use root.leaves! Thank you: https://www.freecodecamp.org/forum/t/treemap-test-5-6/227929/6
+    var nodes = d3.select('g.treeMap')
+      .selectAll('g')
+      .data(root.leaves())
+      .enter()
+      .append('g')
+      .attr('transform', function (d) {
+        return 'translate(' + [d.x0, d.y0] + ')'
+      });
+
+    // Add tiles.
+    nodes.append('rect')
+      .attr('id', 'tile')
+      .attr('class', 'tile')
+      .attr('data-category', d => d["data"]["category"])
+      .attr('data-name', d => d["data"]["name"])
+      .attr('data-value', d => d["data"]["value"])
+      .attr('width', function (d) {
+        return d.x1 - d.x0;
+      })
+      .attr('height', function (d) {
+        return d.y1 - d.y0;
+      })
+      .style('fill', d => {
+        return categoryColorData[d["data"]["category"]];
+      })
+
+    // Add text to each tile.
+    nodes.append('text')
+      .attr('class', 'tileText')
+      .html(function (d, i) {
+        // Return our base name data in line format (subFunc1) wrapped by tSpans (subFunc2).
+        return wrapWithTspan(convertWordsToLines(d.data.name.split(' '), Math.floor((d.x1 - d.x0) / 190) + 1), 5, 0);
+      });
+
+    //
+    // * Time to add our tooltip.
+    //
+
+    // Tooltip canvas.
+    var tooltip = d3.select('body')
+      .append('svg')
+      .attr('id', 'tooltip')
+      .attr('width', 1600)
+      .attr('height', 4200)
+      .on("mousemove", () => {
+        doMouseMove()
+      })
+      .on("mouseover", () => {
+        setTooltipVisible();
+      })
+      .on("mouseout", () => {
+        setTooltipHidden();
+      });
+
+
+
+    // Add tooltip backgrounds.
+    tooltip
+      .append("g")
+      .append("rect")
+      .attr('id', 'tooltipBg')
+      .attr("class", () => "tooltipBg")
+      .style('fill', 'none')
+      .attr('height', () => '150px')
+      .attr('width', () => '300px')
+      .attr("x", () => 0)
+      .attr("y", () => 0)
+      .on("mousemove", () => {
+        doMouseMove()
+      })
+      .on("mouseover", () => {
+        setTooltipVisible();
+      })
+      .on("mouseout", () => {
+        setTooltipHidden();
+      });
+
+
+    // Add tooltips.
+    tooltip.append("text")
+      .attr('id', 'tooltipText')
+      .attr("class", (d, i) => "tooltipText")
+      .attr('height', (d, i) => '150px')
+      .attr('width', (d, i) => '300px')
+      .on("mousemove", (d, i) => () => {
+        doMouseMove()
+      })
+      .on("mouseover", () => {
+        setTooltipVisible();
+      })
+      .on("mouseout", () => {
+        setTooltipHidden();
+      });
+  };
+
+  //
+  // * Setup treemap data using mandatory steps.
+  //
+
+  // Variable Initialization.
+  var root = d3.hierarchy(x);
+  var treemapLayout = d3.treemap();
+
+  treemapLayout
+    .size([1500, 4200]);
+
+  root.sum(function (d) {
+    return d.value;
+  });
+
+  treemapLayout(root);
+
+  // Call function to create the legend.
+  createLegend();
+
+
+  // Call our main function to create a tree map.
+  createTreeMap();
+
+  // Set JS to update mouse coord variables when user moves mouse on an element.
+  [document.getElementById("tooltip"),
+    document.getElementById("tooltipBg"),
+    document.getElementById("tooltipText")
+  ].forEach(v => v.onmousemove = findScreenCoords);
+</script>
+
+<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Tribute Page">
+  <meta name="keywords" content="Tribute,Page,FreeCodeCamp,Project">
+  <meta name="author" content="Donad Abdullah-Robinson">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>My Survey Form</title>
+
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+  <!--
+        <script src="main.js"></script>
+    -->
+</head>
+
+<body>
+  <div id="wrapper">
+    <h1 id="title">Hey</h1>
+    <p id="description">This is a cool page</p><br>
+    <form id="survey-form">
+
+      <label id="name-label" for="name">Name</label><br>
+      <input type="text" id="name" placeholder="Enter Name" required><br><br>
+
+      <!--
+      User Story #6: If I enter an email that is not formatted correctly, I will see an HTML5 validation error.
+      -->
+      <label id="email-label" for="email">Email</label><br>
+      <input type="email" id="email" placeholder="Enter Email" required><br><br>
+
+      <!--
+        User Story #8: If I enter non-numbers in the number input, I will see an HTML5 validation error.
+        User Story #9: If I enter numbers outside the range of the number input, which are defined by the min and max attributes, I will see an HTML5 validation error.
+      -->
+
+      <label id="number-label" for="number">Number</label><br>
+      <input type="number" id="number" placeholder="Enter Age" min="5" max="10"><br><br>
+
+      <br>
+
+      <!-- Favorite food drop down. -->
+      <label for="dropdown">Select a favorite food</label><br>
+      <select id="dropdown">
+        <option value="pasta">Pasta</option><br>
+        <option value="salad">Salad</option><br>
+        <option value="steak">Steak</option><br>
+      </select>
+
+      <br><br>
+
+      <label for="dropdown">Pick a letter</label><br>
+      <input type="radio" name="letters" value="A">A</input><br>
+      <input type="radio" name="letters" value="B">B</input><br>
+      <input type="radio" name="letters" value="C">C</input><br>
+
+      <br>
+
+      <label for="dropdown">Pick a number</label><br>
+      <input type="checkbox" name="numbers" value="Num1">1</input><br>
+      <input type="checkbox" name="numbers" value="Num2">2</input><br>
+      <input type="checkbox" name="numbers" value="Num3">3</input><br>
+
+      <br>
+
+      <label for="dropdown">Enter a comment</label><br>
+      <textarea></textarea><br>
+
+      <br>
+
+      <label for="dropdown">When done, submit</label><br>
+      <button id="submit" type="submit">Submit</button>
+    </form>
+  </div>
+</body>
+
+</html>

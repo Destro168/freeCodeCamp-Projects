@@ -1,0 +1,263 @@
+---------------------------------------------------------------------------
+API Project: Exercise Tracker
+---------------------------------------------------------------------------
+Example Usage:
+
+GET users's exercise log: GET /api/exercise/log?{userId}[&from][&to][&limit]
+{ } = required, [ ] = optional
+from, to = dates (yyyy-mm-dd); limit = number
+
+---------------------------------------------------------------------------
+
+Mine: https://glitch.com/edit/#!/neat-roar-1?path=server.js:220:0
+Share: https://glitch.com/edit/#!/neat-roar-1
+Live: https://neat-roar-1.glitch.me/
+
+Sample GET:
+
+https://neat-roar-1.glitch.me/api/exercise/log?userId=a&from=2018/1/01&to=2018/12/31&limit=2
+
+---------------------------------------------------------------------------
+CODE:
+---------------------------------------------------------------------------
+
+* server.js:
+
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+
+const cors = require('cors')
+
+// (DAR) - Setup mongoose to work with env variable.
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGO_URI);
+
+// Create schemas.
+var userSchema = new mongoose.Schema({
+  userName: String
+});
+
+var exerciseSchema = new mongoose.Schema({
+  userId: String,
+  description: String,
+  duration: Number,
+  date: { type: Date }
+});
+
+// Create models
+var userModel = mongoose.model('User', userSchema);
+var exerciseModel = mongoose.model('Exercise', exerciseSchema);
+
+// Pre-added stuff...
+app.use(cors())
+
+app.use(bodyParser.urlencoded({extended: false}))
+app.use(bodyParser.json())
+
+app.use(express.static('public'))
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/views/index.html')
+});
+
+// (DAR) - add new user to db.
+app.post('/api/exercise/new-user', (req, res) => {
+  var user = new userModel({ userName: req.body.username });
+  
+  user.save(function (err) {
+    if (err) { 
+      return console.error(err);
+    }
+    
+    console.log("Successfully saved user.");
+  });
+});
+
+
+// (DAR) - convert a user input to a number, with a min & max limit.
+function getNumberFromInput(input, min, max) {
+  var parsedInput = parseInt(input);
+  
+  if (!parsedInput || parsedInput < min || parsedInput > max) {
+    return null;
+  }
+  
+  return parsedInput;
+}
+
+// (DAR) - Helper function to get a data object from user input.
+function getDateFromInput(dateInput) {
+  // Make sure date information was entered.
+  if (!dateInput) {
+    console.log("Please fill out all fields");
+    return null;
+  }
+  
+  // Compile data.
+  var typeCounter = 0;
+  const dateData = {
+    year: '',
+    month: '',
+    day: ''
+  };
+  
+  dateInput.split('').forEach((v,i) => {    
+    if (/[\D]/gi.test(parseInt(v))) {
+       typeCounter++; 
+    }
+    else {
+      switch (typeCounter) {
+        case 0:
+          dateData.year = dateData.year + v;
+          break;
+        case 1:
+          dateData.month = dateData.month + v;
+          break;
+        case 2:
+          dateData.day = dateData.day + v;
+          break;
+        default:
+          console.log("Invalid date format for: " + v);
+          return null;
+      }
+    }
+  });
+  
+  // Make sure that year, month and date are numbers and are within set ranges.
+  var parsedYear = getNumberFromInput(dateData.year, 0, 9999);
+  
+  if (!parsedYear) {
+    console.log("Invalid year entry: " + dateData.year);
+    return null;
+  }
+  
+  var parsedMonth = getNumberFromInput(dateData.month, 0, 12);
+  
+  if (!parsedMonth) {
+     console.log("Invalid month entry: ", dateData.month);
+      return null;
+  }
+  
+  var parsedDay = getNumberFromInput(dateData.day, 0, 31);
+  
+  if (!parsedDay) {
+     console.log("Invalid day entry: " + dateData.day);
+      return null;
+  }
+  
+  // Then, return the new object formed from user input.
+  return new Date(parsedYear, (parsedMonth-1), parsedDay); 
+}
+
+// (DAR) - add new exercise to db.
+app.post('/api/exercise/add', (req, res) => {
+  
+  // Make sure all fields are filled.
+  if (!req.body.userId || !req.body.description || !req.body.userId) {
+    console.log("Please fill out all fields");
+    return;
+  }
+  
+  var dateObj = getDateFromInput(req.body.date);
+  
+  // Just return, because getDateFromInput handles all error messaging.
+  if (!dateObj) {
+    return;
+  }
+  
+  var exercise = new exerciseModel({
+    userId: req.body.userId,
+    description: req.body.description,
+    duration: req.body.duration,
+    date: dateObj
+  });
+  
+  exercise.save(function (err) {
+    if (err) {
+      return console.error(err);
+    }
+    
+    console.log("Successfully saved exercise.");
+    res.send("Successfully saved exercise.");
+  });
+});
+
+// (DAR) - get user's exercise from db.
+app.get('/api/exercise/log', (req, res) => {
+  //?&from&to&limit
+  //req.query.color1
+  
+  // Validate all input.
+  var userId = req.query.userId;
+  
+  if (!userId) {
+    console.log("Bad user id. Please try again.");
+    return;
+  }
+  
+  var from = getDateFromInput(req.query.from);
+  var to = getDateFromInput(req.query.to);
+  
+  if (!from || !to) {
+    console.log("Bad date input. Defaulting to large date range.");
+    from = new Date(0, 0, 0);
+    to = new Date();
+    return;
+  }
+  
+  var limit = getNumberFromInput(req.query.limit, 0, 1000);
+  
+  if (!limit) {
+    console.log("Bad limit. Defaulting to 100 records");
+    limit = 100;
+  }
+  
+  // Create our query.
+  var query = exerciseModel.where({ userId: userId })
+    .where('date').gte(from).lte(to)
+    .limit(limit);
+  
+  // Execute it.
+  query.find(function (err, user) {
+    if (err) {
+      console.log("err");
+      res.send(err);
+      return;
+    }
+    if (user) {
+      console.log("success");
+      res.send(user);
+      return;
+    }
+  });
+});
+
+
+// Not found middleware
+app.use((req, res, next) => {
+  return next({status: 404, message: 'not found'})
+})
+
+// Error Handling middleware
+app.use((err, req, res, next) => {
+  let errCode, errMessage
+
+  if (err.errors) {
+    // mongoose validation error
+    errCode = 400 // bad request
+    const keys = Object.keys(err.errors)
+    // report the first validation error
+    errMessage = err.errors[keys[0]].message
+  } else {
+    // generic or custom error
+    errCode = err.status || 500
+    errMessage = err.message || 'Internal Server Error'
+  }
+  res.status(errCode).type('txt')
+    .send(errMessage)
+})
+
+const listener = app.listen(process.env.PORT || 3000, () => {
+  console.log('Your app is listening on port ' + listener.address().port)
+})

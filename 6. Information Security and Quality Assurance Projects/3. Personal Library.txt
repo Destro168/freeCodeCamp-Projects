@@ -1,0 +1,180 @@
+---------------------------------------------------------------------------
+API Project: Personal Library
+---------------------------------------------------------------------------
+
+Project Links:
+
+FCC: https://learn.freecodecamp.org/information-security-and-quality-assurance/information-security-and-quality-assurance-projects/personal-library/
+Demo: https://spark-cathedral.glitch.me/
+
+My Links:
+
+Private: https://glitch.com/edit/#!/warm-gram?path=views/index.html:60:40
+Share: https://glitch.com/edit/#!/warm-gram
+Live: https://warm-gram.glitch.me/
+
+---------------------------------------------------------------------------
+CODE:
+---------------------------------------------------------------------------
+
+*** routes/api.js
+
+// Complete the API routing below
+
+'use strict';
+
+// Default stuff.
+var expect = require('chai').expect;
+//var ObjectId = require('mongodb').ObjectId;
+
+// Connect to mongoose.
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGO_URI);
+
+// Book schema template.
+var bookSchemaTemplate = {
+  title: String,
+  comments: []
+};
+
+// Book schema.
+var BookSchema = new mongoose.Schema(bookSchemaTemplate);
+
+// Book model.
+var BookModel = mongoose.model('Book', BookSchema);
+
+module.exports = function (app) {
+  app.route('/api/books')
+  
+    // Return array of book objects in format:
+    //  [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
+    .get(function (req, res) {
+
+      // Find all books.
+      BookModel.find({}, function (err, data) {
+          // Exit on error.
+          if (err) {
+            res.status(400).send(err);
+            return;
+          }
+
+          // Debug.
+          console.log("DATA: " + data);
+          var bookObjects = [];
+
+          // Add comment length to the data object and return it.
+          for (let o in data) {
+            console.log("Obj: " + data[o]);
+
+            bookObjects.push({
+              _id: data[o]["_id"],
+              title: data[o]["title"],
+              commentcount: data[o]["comments"] ? data[o]["comments"].length : 0
+            });
+          }
+
+          // Return new object.
+          res.status(200).send(bookObjects);
+        }
+      );
+    })
+
+    .post(function (req, res) {
+      // Variable initialization(s).
+      var title = req.body.title;
+
+      // Make sure variables are valid.
+      if (!title) {
+        res.status(400).send("Book title missing.");
+        return;
+      }
+
+      // Create a book object from the title.
+      var Book = new BookModel({title: title});
+
+      // Add it to the database. In callback, return object with title and uniqueId.
+      Book.save(
+        function (err, data) {
+          err ? res.status(400).send(err) : res.status(200).send(data);
+        }
+      );
+    })
+
+    // Delete all books in the database. Returns 'complete delete successful'.
+    .delete(function (req, res) {
+      BookModel.deleteMany({title : {$exists: true} }, 
+        function (err, data) {
+          err ? res.status(400).send(err) : res.status(200).send('complete delete successful');
+        }
+      )
+    });
+
+
+  
+  app.route('/api/books/:id')
+    
+    // Retrieve a single object of book containing title, id & an array of comments.
+    .get(function (req, res) {
+      // Variable Initialization.
+      var bookId = req.params.id;
+
+      // Make sure id is valid.
+      if (!bookId) {
+        res.status(400).send("Book id missing.");
+        return;
+      }
+
+      // Find an object by id and return it's data.
+      BookModel.findById(bookId, function (err, data) {
+        err ? res.status(400).send(err) : res.status(200).send(data);
+      });
+
+      //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
+    })
+
+    
+    // Can post a comment to add a comment to book. Returns book object similar to /api/books/id.
+    .post(function (req, res) {
+      var bookId = req.params.id;
+      var comment = req.body.comment;
+      //json res format same as .get
+      
+      // Make sure id and comment are valid.
+      if (!bookId || !comment) {
+        res.status(400).send("Book id or comment missing.");
+        return;
+      };
+
+      BookModel.findById(bookId, function (err, data) {
+        if (err) {
+          res.status(400).send(err);
+          return;
+        }
+
+        // Add comment data to data object.
+        data["comments"].push(comment);
+        
+        // Save data and return it.
+        data.save(function (err, data) {
+          err ? res.status(400).send(err) : res.status(200).send(data);
+        });
+      });
+    })
+    
+    // Can delete to delete a book from collection. 'Delete successful' returned if successful.
+    .delete(function (req, res) {
+      // Variable Initialization.
+      var bookId = req.params.id;
+
+      // Make sure id is valid.
+      if (!bookId) {
+        res.status(400).send("Book id missing.");
+        return;
+      }
+
+      // Find the content by id and remove.
+      BookModel.findOneAndRemove(bookId, function (err, data) {
+        err ? res.status(400).send(err) : res.status(200).send('Delete Successful');
+      })
+    });
+};

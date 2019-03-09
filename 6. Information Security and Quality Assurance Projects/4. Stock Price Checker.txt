@@ -1,0 +1,319 @@
+---------------------------------------------------------------------------
+API Project: Stock Price Checker
+---------------------------------------------------------------------------
+
+Project Links:
+
+FCC: https://learn.freecodecamp.org/information-security-and-quality-assurance/information-security-and-quality-assurance-projects/stock-price-checker/
+Demo: https://giant-chronometer.glitch.me/
+
+My Links:
+
+Private: https://glitch.com/edit/#!/hulking-trouser?path=routes/api.js:8:31
+Share: https://glitch.com/edit/#!/hulking-trouser
+Live: https://hulking-trouser.glitch.me/
+
+Sample GET:
+
+https://hulking-trouser.glitch.me/api/stock-prices?stock=face&stock=god&like=true
+---------------------------------------------------------------------------
+CODE:
+---------------------------------------------------------------------------
+
+*** routes/api.js
+
+// Complete the API routing below
+
+'use strict';
+
+var expect = require('chai').expect;
+var MongoClient = require('mongodb');
+
+const https = require('https');
+
+// Connect to mongoose.
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGO_URI);
+
+// Create stock schema template.
+var stockSchemaTemplate = {
+  stock: String,
+  likes: {
+    type: Number,
+    default: 1
+  }
+};
+
+// Create schema.
+var stockSchema = mongoose.Schema(stockSchemaTemplate);
+
+// Create Model.
+var stockModel = mongoose.model("Stock", stockSchema);
+
+
+// Create banned IP schema/model.
+// (- Would it be better to make ipAddress field an array (?) -)
+var bannedIpSchema = mongoose.Schema({
+  ipAddress: String,
+});
+
+var bannedIpModel = mongoose.model("IPAddress", bannedIpSchema);
+
+module.exports = function (app) {
+
+  app.route('/api/stock-prices')
+    .get(function (req, res) {
+      //
+      // * GET USER INFO FROM QUERY STRING OR FORM DATA.
+      //
+
+      var reqData = {
+        like: false
+      };
+      var doCompare = false;
+
+      if (req.query.stock) {
+        if (req.query.stock[0].length > 1) {
+          reqData = {
+            stockOne: req.query.stock[0],
+            stockTwo: req.query.stock[1],
+          }
+
+          doCompare = true;
+        } else {
+          reqData = {
+            stockOne: req.query.stock,
+            stockTwo: '',
+          }
+        }
+
+        // Always store like field.
+        if (req.query.like) {
+          reqData["like"] = req.query.like;
+        }
+
+      } else {
+        if (req.body.stock[0].length > 1) {
+          reqData = {
+            stockOne: req.body.stock[0],
+            stockTwo: req.body.stock[1],
+          }
+
+          doCompare = true;
+        } else {
+          reqData = {
+            stockOne: req.body.stock,
+            stockTwo: '',
+          }
+        }
+
+        // Always store like field.
+        if (req.body.like) {
+          reqData["like"] = req.body.like;
+        }
+      }
+
+      //
+      // * STORE LIKE DATA. ADD A LIKE IF CONDITIONS ARE RIGHT.
+      //
+
+      // Always retrieve current like count. Add a like if user wants to.
+      stockModel.find({
+        stock: {
+          $eq: reqData["stockOne"]
+        }
+      }, function (err, data) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+
+        //console.log("DATA: " + data + " " + JSON.stringify(data));
+
+        // If data is null, then we create a new stock model for it and save it.
+        if (data.length == 0) {
+          var newStock = new stockModel({
+            stock: reqData["stockOne"]
+          });
+
+          newStock.save((err) => {
+            if (err) {
+              res.status(400).send(err);
+              return;
+            };
+          });
+
+          // Store like count for stock 1 as 1.
+          reqData["stockOneLikeCount"] = 1;
+        } else {
+
+          // If user wants to add like and we aren't performing a compare, begin adding a like process...
+          if (reqData["like"] == 'true' && doCompare == false) {
+
+            //
+            // * GET REQUESTER'S IP AND ERROR OUT IF BANNED.
+            //
+
+            var targetIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+            bannedIpModel.findOne({
+              ipAddress: targetIp
+            }, (err, bannedIpData) => {
+
+              // Exit on error.
+              if (err) {
+                res.status(400).send(err);
+                return;
+              };
+
+              // If ip is found (aka not null), error out.
+              if (bannedIpData !== null) {
+                res.status(400).send('Multiple votes from the same IP Address are disallowed.');
+                return;
+              }
+
+              //
+              // * ADD BANNED IP TO BANNED IP LIST.
+              //
+
+              var bannedIp = bannedIpModel({
+                ipAddress: targetIp
+              });
+
+              // Save that banned ip.
+              bannedIp.save((err) => {
+                if (err) {
+                  res.status(400).send(err);
+                  return;
+                }
+                
+                console.log("Successfully banned ip");
+              });
+              
+              //
+              // * ADD LIKE AND SAVE.
+              //
+
+              stockModel.findOneAndUpdate({
+                stock: {
+                  $eq: reqData["stockOne"]
+                }
+              }, {
+                $inc: { likes: 1 }
+              }, (err) => {
+                if (err) {
+                  console.log("Error: "  + err);
+                  
+                  res.status(400).send(err);
+                  return;
+                }
+
+                console.log("Successfully incremented like count");
+              });
+              
+            })
+
+            //console.log("A: " + typeof data["likes"] + " " + data["likes"] + doc);
+
+            // Increment this var for usage later and to match saved db value.
+            data["likes"] += 1;
+          }
+
+          // Store like count for stock 1.
+          reqData["stockOneLikeCount"] = data["likes"];
+        }
+      });
+
+      // Find the like count for stock 2 if user is comparing two stocks.
+      if (doCompare) {
+        stockModel.find({
+          stock: {
+            $eq: reqData["stockTwo"]
+          }
+        }, function (err, data) {
+          if (err) {
+            res.status(400).send(err);
+            return;
+          }
+
+          if (data == null) {
+            var newStock = new stockModel({
+              stock: reqData["stockTwo"]
+            });
+
+            newStock.save((err) => {
+              if (err) {
+                res.status(400).send(err);
+                return;
+              };
+            });
+
+            // Store like count for stock 1 as 1.
+            reqData["stockTwoLikeCount"] = 1;
+          } else {
+            // Store like count for stock 2.
+            reqData["stockTwoLikeCount"] = data["likes"];
+          }
+        });
+      }
+
+      //console.log("Data 1: " + JSON.stringify(reqData));
+
+      //
+      // * ACQUIRE STOCK INFORMATION BY USING HTTP GET.
+      // * THEN, RETURN DATA TO USER.
+      //
+
+      var url = 'https://finance.google.com/finance/info?q=' + reqData["stockOne"];
+
+      if (doCompare) {
+        url = url + '%3a' + reqData["stockTwo"]
+      }
+
+      https.get(url, (resp) => {
+        //console.log("RESP: " + resp + " " + url);
+
+        let data = '';
+
+        // A chunk of data has been recieved.
+        resp.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        // The whole response has been received. Print out the result.
+        resp.on('end', () => {
+          // Currently, google is blocking my requests (because at work).
+          // So, return jibberish prices for now.
+          // when we get good data parse in a proper price response var.
+
+          //console.log("Data 2: " + data);
+
+          var fakeData; // Use 'data' above when we get good data. AKA, comment this.'
+
+          if (!doCompare) {
+            fakeData = {
+              stock: reqData["stock"],
+              price: '23.10',
+              likes: reqData["stockOneLikeCount"]
+            };
+          } else {
+            fakeData = [{
+              stock: reqData["stock"],
+              price: '23.10',
+              rel_likes: 0 - reqData["stockTwoLikeCount"] + reqData["stockOneLikeCount"]
+            }, {
+              stock: reqData["stock"],
+              price: '570.10',
+              rel_likes: 0 - reqData["stockOneLikeCount"] + reqData["stockTwoLikeCount"]
+            }];
+          }
+
+          res.status(200).send(fakeData);
+          return;
+        });
+      }).on("error", (err) => {
+        res.status(400).send(err);
+        return;
+      });
+    });
+};

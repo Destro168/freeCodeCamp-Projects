@@ -1,0 +1,205 @@
+---------------------------------------------------------------------------
+Advanced Project: Issue Tracker
+---------------------------------------------------------------------------
+
+Project Links:
+
+FCC: https://learn.freecodecamp.org/information-security-and-quality-assurance/information-security-and-quality-assurance-projects/issue-tracker/
+Demo: https://protective-garage.glitch.me/
+
+My Links:
+
+Private: https://glitch.com/edit/#!/bold-coast?path=routes/api.js:12:20
+Share: https://glitch.com/edit/#!/bold-coast
+
+---------------------------------------------------------------------------
+CODE:
+---------------------------------------------------------------------------
+
+// Complete the API routing below
+
+'use strict';
+
+var expect = require('chai').expect;
+var MongoClient = require('mongodb');
+var ObjectId = require('mongodb').ObjectID;
+
+//const CONNECTION_STRING = process.env.DB; //MongoClient.connect(CONNECTION_STRING, function(err, db) {});
+
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGO_URI);
+
+var issueSchemaTemplateObj = {
+  project_name: String,
+  issue_title: String,
+  issue_text: String,
+  created_by: String,
+  assigned_to: {
+    type: String,
+    default: 'Nobody'
+  },
+  status_text: {
+    type: String,
+    default: 'No status'
+  },
+  created_on: {
+    type: Date,
+    default: Date.now
+  },
+  updated_on: {
+    type: Date,
+    default: Date.now
+  },
+  open: {
+    type: Boolean,
+    default: true
+  }
+};
+
+var IssueSchema = new mongoose.Schema(issueSchemaTemplateObj);
+var IssueModel = mongoose.model('Issue', IssueSchema);
+
+const g_issueObj = (project_name, issue_title, issue_text, created_by, assigned_to, status_text) => ({
+  project_name,
+  issue_title,
+  issue_text,
+  created_by,
+  assigned_to,
+  status_text,
+});
+
+const g_getIssueObjFromReq = (req) => {
+  return g_issueObj(
+    req.params.project,
+    req.body.issue_title,
+    req.body.issue_text,
+    req.body.created_by,
+    req.body.assigned_to,
+    req.body.status_text
+  );
+};
+
+const g_issueIsEmpty = (issueObj) => {
+  // If we have a non-empty 
+  for (let o in issueObj) {
+    if (o != "project_name" && issueObj[o]) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+const g_getFindObjFromReqQueryString = (req) => {
+  var searchObj = {};
+
+  // All valid parameters are based on data that are stored in the schema template (plus id).
+  [...Object.keys(issueSchemaTemplateObj), '_id'].forEach(v => {
+    if (req.query[v]) {
+      searchObj[v] = {
+        $eq: req.query[v]
+      };
+    }
+  });
+
+  return searchObj;
+}
+
+module.exports = function (app) {
+  // Example Route: 
+  app.route('/api/issues/:project')
+
+    // Get - https://bold-coast.glitch.me/api/issues/:project?[anyParam]=[anyVal]
+    .get(function (req, res) {
+      IssueModel.find(
+        g_getFindObjFromReqQueryString(req),
+        function (err, data) {
+          err ? res.status(400).send(err) : res.status(200).send(data);
+        }
+      );
+    })
+
+    // POST - https://bold-coast.glitch.me/api/issues/:project + some form data in body.
+    .post(function (req, res) {
+      // Make sure that mandatory fields are filled.
+      if (!req.body.issue_title || !req.body.issue_text || !req.body.created_by) {
+        console.log("Issue title, text or created_by field missing.");
+        return;
+      }
+
+      // Create the issue.
+      var issue = new IssueModel(g_getIssueObjFromReq(req));
+
+      // Perform save and store result.
+      issue.save(
+        function (err, data) {
+          err ? res.status(400).send(err) : res.status(200).send(data);
+        }
+      );
+    })
+
+    // PUT - https://bold-coast.glitch.me/api/issues/:project + some form data in body.
+    .put(function (req, res) {
+      // Create variables based on args.
+      var id = req.body._id;
+      var issue;
+
+      // First make sure id is valid.
+      if (!id) {
+        res.status(400).send("Id field missing.");
+        return;
+      }
+
+      // Then, set issue obj.
+      issue = g_getIssueObjFromReq(req);
+
+      // Check if there is at least one field to update.
+      if (g_issueIsEmpty(issue)) {
+        res.status(400).send('Could not update ' + id);
+        return;
+      }
+
+      // Perform update by finding the field, modifying and then saving it.
+      IssueModel.findById(id,
+        function (err, data) {
+          // If fail, error.
+          if (err) {
+            res.status(400).send(err);
+            return;
+          }
+
+          // Modify data such that it uses new data from issue var (if available).
+          for (let o in issue) {
+            if (issue[o] && issue[o] !== '') {
+              data[o] = issue[o];
+            }
+          }
+
+          // Save the data variable now.
+          data.save((err, savedData) => {
+            (err) ?
+            res.status(400).send(err):
+              res.status(200).send(savedData);
+          });
+        });
+    })
+
+    // Delete - https://bold-coast.glitch.me/api/issues/:project + some form data in body.
+    .delete(function (req, res) {
+      // Create variable(s) based on args.
+      var id = req.body._id;
+
+      // First make sure id is valid.
+      if (!id) {
+        res.status(400).send('Could not update ' + id);
+        return;
+      }
+
+      // Delete by passed in id.
+      IssueModel.findByIdAndDelete(req.body._id,
+        function (err, data) {
+          err ? res.status(400).send(err) : res.status(200).send(data);
+        }
+      );
+    });
+};

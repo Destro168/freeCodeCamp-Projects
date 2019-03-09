@@ -1,0 +1,134 @@
+---------------------------------------------------------------------------
+API Project: URL Shortener
+---------------------------------------------------------------------------
+Example Usage:
+
+1.) I can POST a URL to [project_url]/api/shorturl/new and I will receive a shortened URL in the JSON response.
+Example : {"original_url":"www.google.com","short_url":1}
+
+2.) If I pass an invalid URL that doesn't follow the http(s)://www.example.com(/more/routes) format, the JSON response will contain an error like {"error":"invalid URL"}
+HINT: to be sure that the submitted url points to a valid site you can use the function dns.lookup(host, cb) from the dns core module.
+
+3.) When I visit the shortened URL, it will redirect me to my original link.
+
+4.) Short URL Creation
+example: POST [project_url]/api/shorturl/new - https://www.google.com
+
+---------------------------------------------------------------------------
+
+Mine: https://glitch.com/edit/#!/psychedelic-enemy
+Share: https://glitch.com/edit/#!/psychedelic-enemy
+Live: https://psychedelic-enemy.glitch.me/
+
+Sample GET:
+
+---------------------------------------------------------------------------
+CODE:
+---------------------------------------------------------------------------
+
+* server.js:
+
+'use strict';
+
+var express = require('express');
+var mongo = require('mongodb');
+var mongoose = require('mongoose');
+
+var cors = require('cors');
+
+var app = express();
+
+// Basic Configuration 
+var port = process.env.PORT || 3000;
+
+/** this project needs a db !! **/ 
+// mongoose.connect(process.env.MONGOLAB_URI);
+
+app.use(cors());
+
+/** this project needs to parse POST bodies **/
+// you should mount the body-parser here
+
+app.use('/public', express.static(process.cwd() + '/public'));
+
+app.get('/', function(req, res){
+  res.sendFile(process.cwd() + '/views/index.html');
+});
+
+// (DAR) - Setup body parser.
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Setup dns core module.
+const dns = require('dns');
+
+const options = {
+  family: 4,
+  hints: dns.ADDRCONFIG | dns.V4MAPPED,
+};
+
+// Create an object to keep track or urls and their values.
+let urlObj = {};
+// Keep a constant counter of the next short_url id
+let nextShortUrl = 0;
+
+// Post a URL to recieve a shortened url in JSON response
+app.post('/api/shorturl/new', (req,res) => {
+  // Variabel declarations.
+  let x = req.body.url;
+  const invalidObject = {"error":"invalid URL"};
+  
+  // Make sure a valid url is entered.
+  if (!/http[s]*:\/\/www\.[A-z0-9]*\.com[\/[A-z0-9]*]*/gi.test(x)) {
+    res.json(invalidObject);
+    return;
+  }
+  
+  /* Blocked at work. Test locally at home.
+  dns.lookup(x, (err, address) =>
+    console.log('address: %j family: IPv%s', address, err));
+  */
+  
+  // Now, we determine the short url to return to set internally or use here.
+  var shortURL;
+  
+  // Set a new shortURL if it exists, or set to existing.
+  if (urlObj[x]) {
+   shortURL = urlObj[x];
+  }
+  else {
+    nextShortUrl++;
+    shortURL = nextShortUrl;
+    urlObj[x] = shortURL;
+  }
+  
+  res.json({
+    original_url: x,
+    short_url: shortURL
+  });
+});
+
+// Match a specified id to a stored url and redirect user to that url.
+app.get('/api/shorturl/:id', (req,res) => {
+  var id = req.params.id;
+  
+  for (let o in urlObj) {
+    if (urlObj[o] == id) {
+      res.redirect(200, o);
+      return;
+    }
+  }
+  
+  console.log("Failed to find a url matching ID: " + id);
+  return;
+});
+
+// your first API endpoint... 
+app.get("/api/hello", function (req, res) {
+  res.json({greeting: 'hello API'});
+});
+
+
+app.listen(port, function () {
+  console.log('Node.js listening ...');
+});

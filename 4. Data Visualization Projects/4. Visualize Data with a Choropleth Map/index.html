@@ -1,0 +1,108 @@
+<!DOCTYPE HTML>
+<html>
+
+<!-- https://www.reddit.com/r/videos/comments/adk8lq/dave_chappelle_how_old_is_15_really/
+  Rogers $25/month for 500mpbs and got IPTV
+  https://www.dailymotion.com/video/x73k3nk
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Choropleth Map Project">
+  <meta name="keywords" content="Choropleth,Map,FreeCodeCamp,Project">
+  <meta name="author" content="Donad Abdullah-Robinson">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Visualizing Data - Choropleth Map!</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
+  <script src="main.js"></script>
+  <script src="domObj.js"></script>
+  <script src="topojson.min.js"></script>
+</head>
+
+<body>
+  <h1 id="title">Visualize Data with a Choropleth Map Project</h1>
+  <p id="description">This is a Choropleth map of education data by state.</p>
+  <p>Author's Notes: This project was the ultimate moral dillema for me.
+
+    Up until this point, the Data Visualization projects could be mostly solved using just the API Reference and FCC
+    Lessons. However, for this project,
+    it is almost impossible to solve without using API Reference. Furthermore, the API Reference for d3-geo is very
+    hard to understand on it's own, which
+    makes it almost mandatory that one use the examples on the API-reference to understand the code.
+
+    And therein lies the problem: the examples. The d3 geo page @ https://observablehq.com/collection/@d3/d3-geo
+    literally has a Choropleth map as one of the examples as a reference.
+
+    So, this raises the questions: Is it fair play to use an example provided by the d3.js developers to solve the
+    project? Or, is it cheating?
+
+    After much contemplation, I decided that the examples in the API Reference are fair play. While, I absolutely will
+    not use project solutions clearly marked as the
+    solution for a project, I too absolutely won't limit the myself to excluding any portion of the official product
+    documentation for solving a project.
+
+    To me, referencing the official documentation can never be viewed as 'cheating'. Referencing documentation is a
+    mandatory part of programming. And, I am not going to cripple my ability
+    to solve the problem efficiently due to the project duplicating documentation.
+
+    As such, I implemented the solution in such a way that I avoided copy-pasting hte answer directly. And, I insist
+    that the project is insufficiently unique to test one's skills effectively.
+  </p>
+</body>
+
+<!--
+  KEEP https://bl.ocks.org/mbostock/4090848 
+-->
+
+<style>
+  .states {
+    fill: #ccc;
+    stroke: #fff;
+  }
+</style>
+
+<script src="https://d3js.org/d3-array.v1.min.js"></script>
+<script src="https://d3js.org/d3-geo.v1.min.js"></script>
+
+<script src="https://d3js.org/d3-selection.v1.min.js"></script>
+
+<script src="https://d3js.org/d3-collection.v1.min.js"></script>
+<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+<script src="https://d3js.org/d3-request.v1.min.js"></script>
+
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+<script>
+  /** API Reference:
+   * https://github.com/d3/d3-geo/blob/master/README.md#geoPath
+   * Examples; https://observablehq.com/collection/@d3/d3-geo
+   */
+
+  var width = 960,
+    height = 500;
+
+  var projection = d3.geoAlbersUsa();
+  var path = d3.geoPath()
+    .projection(projection);
+
+  var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  d3.json(
+    "https://raw.githubusercontent.com/no-stack-dub-sack/testable-projects-fcc/master/src/data/choropleth_map/counties.json",
+    function (error, us) {
+      svg.append("path")
+        .attr("class", "states")
+        .datum(topojson.feature(us, us.objects.states))
+        .attr("d", path);
+    });
+</script>
+
+<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+
+</html>

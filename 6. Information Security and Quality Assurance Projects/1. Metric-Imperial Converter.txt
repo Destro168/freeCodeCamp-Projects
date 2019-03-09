@@ -1,0 +1,458 @@
+---------------------------------------------------------------------------
+Advanced Project: Metric-Imperial Converter
+---------------------------------------------------------------------------
+
+Example Usage:
+
+https://kindly-age.glitch.me/api/convert?input=3.5/5mi
+
+---------------------------------------------------------------------------
+
+Mine: https://glitch.com/edit/#!/kindly-age?path=routes/api.js:22:16
+Share: https://glitch.com/edit/#!/kindly-age
+Live: https://kindly-age.glitch.me/
+
+---------------------------------------------------------------------------
+
+*** routes/api.js
+
+// API Routing
+
+'use strict';
+
+var expect = require('chai').expect;
+var ConvertHandler = require('../controllers/convertHandler.js');
+
+module.exports = function (app) {
+  
+  var convertHandler = new ConvertHandler();
+  
+  // Pretty much all remaining user stories completed here, convertHandler.js an dthe tests folder files.
+  app.route('/api/convert')
+    .get(function (req, res){
+      var input = req.query.input;
+      var initNum = convertHandler.getNum(input);
+      var initUnit = convertHandler.getUnit(input);
+      var returnNum = convertHandler.convert(initNum, initUnit);
+      var returnUnit = convertHandler.getReturnUnit(initUnit);
+      var toString = convertHandler.getString(initNum, initUnit, returnNum, returnUnit);
+      
+      //res.json
+      res.json({
+        initNum: initNum,
+        initUnit: initUnit,
+        returnNum: returnNum,
+        returnUnit: returnUnit,
+        string: toString
+      });
+    });
+};
+
+*** controllers/convertHandler.js
+//Complete the handler logic below
+
+function ConvertHandler() {
+  
+  this.getNum = function(input) {
+    
+    // Immediately abort if two '/'s in the input.
+    var check = input.match(/[\/]/gi);
+    
+    if (check !== null && check.length > 1) {
+      return 'invald number';
+    }
+    
+    var num = []; // Stores user input numbers.
+    var storePos = 0; // Used to keep track of what 'num' we're appending to.
+    var finalNum = 0; // The final return value, used later on in this function.
+    
+    // Build the 'num' array that contains all numbers from user input.
+    for (var i = 0; i < input.length; i++) {
+      
+      // for the '/' case, we need to add a new entry to 'num'.
+      if (input[i] == '/') {
+           num[storePos] = parseFloat(num[storePos]);
+           if (!num[storePos] || typeof num[storePos] !== 'number') {
+             return 'invalid number'; 
+           }
+           
+          storePos++; 
+       }
+      // Otherwise, keep building the current num array index.
+      else if (input[i] == '.' || /\d/.test(input[i])) {
+        if (!num[storePos]) {
+          num[storePos] = '';
+        }
+        
+        num[storePos] = num[storePos].concat(input[i]);
+      }
+    }
+    
+    // If more than one array entry, we reduce.
+    if (num.length > 1) {
+      // This will actually only run when there are fractional components,
+      // as decimals form single numbers, rather than array entries.
+      return num.reduce((a,b) => {
+        return a/b;
+      });
+    }
+    // Otherwise, return first element of array.
+    else {
+      // #11: I can use fractions, decimals or both in my parameter(ie. 5, 1/2, 2.5/6), but if nothing is provided it will default to 1.
+      if (!num[0]) {
+       return 1; 
+      }
+      
+     return num[0]; 
+    }
+  };
+  
+  this.getUnit = function(input) {
+    // Make sure there is input.
+    if (!input) {
+       return 'invalid unit'; 
+    }
+    
+    // Grab the characters from the string.
+    var result = input.match(/[A-z]+/)[0];
+    
+    // If invalid characters, return error. Else, return result.
+    if (!result || typeof result !== 'string') {
+       return 'invalid unit'; 
+    }
+    
+    return result;
+  };
+  
+  this.getReturnUnit = function(initUnit) {
+    switch (initUnit) {
+      case 'gal': 
+        return 'L';
+        break;
+      case 'lbs':
+        return 'kg';
+        break;
+      case 'mi':
+        return 'km';
+        break;
+      case 'L':
+        return 'gal';
+        break;
+      case 'lbs':
+        return 'kg';
+        break;
+      case 'km':
+        return 'mi';
+        break;
+      default:
+        console.log("Invalid unit specified. (getReturnUnit)");
+        return 'invalid unit';
+    }
+  };
+
+  this.spellOutUnit = function(unit) {
+    switch (unit) {
+      case 'gal': 
+        return 'gallons'
+        break;
+      case 'lbs':
+        return 'pounds';
+        break;
+      case 'mi':
+        return 'miles';
+        break;
+      case 'li':
+        return 'liters';
+        break;
+      case 'kg':
+        return 'kilograms';
+        break;
+      case 'km':
+        return 'kilometers';
+        break;
+      default:
+        console.log("Invalid unit specified. (spellOutUnit)");
+        return 'invalid unit';
+    }
+  };
+  
+  this.convert = function(initNum, initUnit) {
+    const galToL = 3.78541;
+    const lbsToKg = 0.453592;
+    const miToKm = 1.60934;
+    var result;
+    
+    switch (initUnit) {
+      case 'gal': 
+        return initNum * galToL;
+        break;
+      case 'lbs':
+        return initNum * lbsToKg;
+        break;
+      case 'mi':
+        return initNum * miToKm;
+        break;
+      case 'L':
+        return initNum / galToL;
+        break;
+      case 'kg':
+        return initNum / lbsToKg;
+        break;
+      case 'km':
+        return initNum / miToKm;
+        break;
+      default:
+        console.log("Invalid unit specified. (convert)");
+        return 'invalid unit';
+    }
+  };
+  
+  this.getString = function(initNum, initUnit, returnNum, returnUnit) {
+    return initNum + " " + initUnit + " converts to " + returnNum + " " + returnUnit;
+  };
+  
+}
+
+module.exports = ConvertHandler;
+
+
+*** tests/1_unit-tests.js
+/*
+*
+*
+*       FILL IN EACH UNIT TEST BELOW COMPLETELY
+*       -----[Keep the tests in the same order!]----
+*       (if additional are added, keep them at the very end!)
+*/
+
+var chai = require('chai');
+var assert = chai.assert;
+var ConvertHandler = require('../controllers/convertHandler.js');
+
+var convertHandler = new ConvertHandler();
+
+suite('Unit Tests', function(){
+  
+  suite('Function convertHandler.getNum(input)', function() {
+    
+    test('Whole number input', function(done) {
+      var input = '32L';
+      assert.equal(convertHandler.getNum(input),32);
+      done();
+    });
+    
+    test('Decimal Input', function(done) {
+      var input = '3.5L';
+      assert.equal(convertHandler.getNum(input), 3.5);
+      done();
+    });
+    
+    test('Fractional Input', function(done) {
+      var input = '3/5L';
+      assert.equal(convertHandler.getNum(input), 3.5);
+      done();
+    });
+    
+    test('Fractional Input w/ Decimal', function(done) {
+      var input = '10/2.5L';
+      assert.equal(convertHandler.getNum(input), 4.0);
+      done();
+    });
+    
+    test('Invalid Input (double fraction)', function(done) {
+      var input = '10/2.5/2L';
+      assert.equal(convertHandler.getNum(input), 'invalid number');
+      done();
+    });
+    
+    test('No Numerical Input', function(done) {
+      var input = 'aL';
+      assert.equal(convertHandler.getNum(input), 'invalid number');
+      done();
+    }); 
+    
+  });
+  
+  suite('Function convertHandler.getUnit(input)', function() {
+    
+    test('For Each Valid Unit Inputs', function(done) {
+      var input = ['gal','l','mi','km','lbs','kg','GAL','L','MI','KM','LBS','KG'];
+      input.forEach(function(ele) {
+        assert.notEqual(convertHandler.getUnit(ele), 'invalid unit');
+      });
+      done();
+    });
+    
+    test('Unknown Unit Input', function(done) {
+      assert.equal(convertHandler.getUnit('face'), 'invalid unit');
+      done();
+    });
+  });
+  
+  suite('Function convertHandler.getReturnUnit(initUnit)', function() {
+    
+    test('For Each Valid Unit Inputs', function(done) {
+      var input = ['gal','l','mi','km','lbs','kg'];
+      var expect = ['l','gal','km','mi','kg','lbs'];
+      input.forEach(function(ele, i) {
+        assert.equal(convertHandler.getReturnUnit(ele), expect[i]);
+      });
+      done();
+    });
+    
+  });  
+  
+  suite('Function convertHandler.spellOutUnit(unit)', function() {
+    
+    test('For Each Valid Unit Inputs', function(done) {
+      var input = ['gal','l','mi','km','lbs','kg'];
+      var expect = ['liter','gallon','kilometer','mile','kilogram','pounds'];
+      
+      input.forEach(function(ele, i) {
+        assert.equal(convertHandler.getReturnUnit(ele), expect[i]);
+      });
+      
+      done();
+    });
+    
+  });
+  
+  suite('Function convertHandler.convert(num, unit)', function() {
+    
+    test('Gal to L', function(done) {
+      var input = [5, 'gal'];
+      var expected = 18.9271;
+      assert.approximately(convertHandler.convert(input[0],input[1]),expected,0.1); //0.1 tolerance
+      done();
+    });
+    
+    test('L to Gal', function(done) {
+      var input = [18.9271, 'L'];
+      var expected = 5;
+      assert.approximately(convertHandler.convert(input[0],input[1]),expected,0.1); //0.1 tolerance
+      done();
+    });
+    
+    test('Mi to Km', function(done) {
+      var input = [3.1, 'mi'];
+      var expected = 4.988954;
+      assert.approximately(convertHandler.convert(input[0],input[1]),expected,0.1); //0.1 tolerance
+      done();
+    });
+    
+    test('Km to Mi', function(done) {
+      var input = [4.988954, 'mi'];
+      var expected = 3.1;
+      assert.approximately(convertHandler.convert(input[0],input[1]),expected,0.1); //0.1 tolerance
+      done();
+    });
+    
+    test('Lbs to Kg', function(done) {
+      var input = [10, 'lbs'];
+      var expected = 4.53592;
+      assert.approximately(convertHandler.convert(input[0],input[1]),expected,0.1); //0.1 tolerance
+      done();
+    });
+    
+    test('Kg to Lbs', function(done) {
+      var input = [4.53592, 'kg'];
+      var expected = 10;
+      assert.approximately(convertHandler.convert(input[0],input[1]),expected,0.1); //0.1 tolerance
+      done();
+    });
+    
+  });
+
+});
+
+*** tests/2_unit-tests.js
+
+/*
+*
+*
+*       FILL IN EACH FUNCTIONAL TEST BELOW COMPLETELY
+*       -----[Keep the tests in the same order!]-----
+*       (if additional are added, keep them at the very end!)
+*/
+
+var chaiHttp = require('chai-http');
+var chai = require('chai');
+var assert = chai.assert;
+var server = require('../server');
+
+chai.use(chaiHttp);
+
+suite('Functional Tests', function() {
+
+  suite('Routing Tests', function() {
+    
+    suite('GET /api/convert => conversion object', function() {
+      
+      test('Convert 10L (valid input)', function(done) {
+       chai.request(server)
+        .get('/api/convert')
+        .query({input: '10L'})
+        .end(function(err, res){
+          assert.equal(res.status, 200);
+          assert.equal(res.body.initNum, 10);
+          assert.equal(res.body.initUnit, 'L');
+          assert.approximately(res.body.returnNum, 2.64172, 0.1);
+          assert.equal(res.body.returnUnit, 'gal');
+          done();
+        });
+      });
+      
+      test('Convert 32g (invalid input unit)', function(done) {
+        chai.request(server)
+        .get('/api/convert')
+        .query({input: '32G'})
+        .end(function(err, res){
+          assert.equal(res.status, 200);
+          assert.equal(res.body.returnUnit, 'invalid unit');
+          done();
+        });
+      });
+      
+      test('Convert 3/7.2/4kg (invalid number)', function(done) {
+        chai.request(server)
+        .get('/api/convert')
+        .query({input: '3/7.2/4kg'})
+        .end(function(err, res){
+          assert.equal(res.status, 200);
+          assert.equal(res.body.returnNum, 'invalid number');
+          done();
+        });
+      });
+      
+      test('Convert 3/7.2/4kilomegagram (invalid number and unit)', function(done) {
+        chai.request(server)
+        .get('/api/convert')
+        .query({input: '3/7.2/4kilomegagram'})
+        .end(function(err, res){
+          assert.equal(res.status, 200);
+          assert.equal(res.body.returnUnit, 'invalid unit');
+          assert.equal(res.body.returnNum, 'invalid number');
+          done();
+        });
+      });
+      
+      test('Convert kg (no number)', function(done) {
+        chai.request(server)
+        .get('/api/convert')
+        .query({input: ''})
+        .end(function(err, res){
+          assert.equal(res.status, 200);
+          assert.equal(res.body.returnUnit, 'invalid unit');
+          assert.equal(res.body.returnNum, 'invalid number');
+          done();
+        });
+        //done();
+      });
+      
+    });
+
+  });
+
+});
+
+

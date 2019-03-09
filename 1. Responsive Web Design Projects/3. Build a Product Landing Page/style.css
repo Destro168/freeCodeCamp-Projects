@@ -1,0 +1,127 @@
+
+  /* General CSS */
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: rgb(77, 117, 133);
+  }
+  
+  /* CSS for the Header at the top */
+  header {
+    position: sticky;
+    top: 0;
+    background-color: rgb(236, 236, 236);
+    z-index: 1;
+    margin-top: -10px;
+  }
+  
+  nav#nav-bar {
+    margin: 10px;
+  }
+  
+  span.spanLeft {
+    padding-left: 100px;
+  }
+  
+  span.spanRight {
+    float: right;
+  }
+  
+  .nav-link {
+    padding-right: 50px;
+  }
+  
+  div#headerDivider { 
+    height: 5px;
+    background-color: rgb(180, 180, 180);
+  }
+  
+  div#bodyWrapper {
+    background-color: rgb(236, 236, 236);
+    padding: 5px;
+  }
+  
+  /* CSS For the Email section */
+  .formSection {
+    text-align: center;
+  }
+  
+  /* CSS for the details section. Uses flex box, because User Story. */
+  img {
+    height: 24px;
+    width: 32px;
+  }
+  
+  div#details {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  
+  div#detailsRow {
+    display: flex;
+    flex-direction: row;
+    width: 600px;
+  }
+  
+  div#detailsImage {
+    width: 125px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* The Video section next. */
+  div.video {
+    text-align: center;
+    width: 100%;
+  }
+  
+  video#video {
+    width: 320px;
+    height: 240px;
+  }
+  
+  /* The three cards next. */
+  div#threeCards {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  div.card {
+    margin: 20px;
+    border: solid 2px black;
+    text-align: center;
+    width: 250px;
+  }
+  
+  div.cardTop {
+    background-color: rgb(180, 180, 180);
+    padding: 10px;
+  }
+  
+  div.cardBody {
+    background-color: white;
+    padding: 10px;
+  }
+  
+  /* Footer last. */
+  footer {
+    background-color: rgb(180, 180, 180);
+    width: 50%;
+    padding: 25px;
+    margin: 0 auto;
+    text-align: right;
+  }
+  
+  @media (max-width: 600px) {
+    footer {
+      width: 100%;
+    }
+  }
