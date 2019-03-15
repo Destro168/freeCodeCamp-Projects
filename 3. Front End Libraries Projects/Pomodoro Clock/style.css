@@ -1,0 +1,38 @@
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: rgb(255, 255, 255);
+    height: 100%;
+    width: 100%;
+    margin: 10px;
+    font-size: 14px;
+  }
+  
+  span.grey {
+    background-color: #eee;
+  }
+
+  span.bold {
+    font-weight: 900;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 900;
+  }
+  h2 {
+    font-size: 18px;
+    font-weight: 800;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  h1#title {
+    margin-left: 50px;
+  }

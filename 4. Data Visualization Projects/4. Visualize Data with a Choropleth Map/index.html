@@ -1,108 +1,114 @@
-<!DOCTYPE HTML>
-<html>
-
-<!-- https://www.reddit.com/r/videos/comments/adk8lq/dave_chappelle_how_old_is_15_really/
-  Rogers $25/month for 500mpbs and got IPTV
-  https://www.dailymotion.com/video/x73k3nk
--->
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="description" content="Choropleth Map Project">
-  <meta name="keywords" content="Choropleth,Map,FreeCodeCamp,Project">
-  <meta name="author" content="Donad Abdullah-Robinson">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Visualizing Data - Choropleth Map!</title>
-
-  <link rel="stylesheet" href="style.css">
-
-  <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
-  <script src="main.js"></script>
-  <script src="domObj.js"></script>
-  <script src="topojson.min.js"></script>
-</head>
-
-<body>
-  <h1 id="title">Visualize Data with a Choropleth Map Project</h1>
-  <p id="description">This is a Choropleth map of education data by state.</p>
-  <p>Author's Notes: This project was the ultimate moral dillema for me.
-
-    Up until this point, the Data Visualization projects could be mostly solved using just the API Reference and FCC
-    Lessons. However, for this project,
-    it is almost impossible to solve without using API Reference. Furthermore, the API Reference for d3-geo is very
-    hard to understand on it's own, which
-    makes it almost mandatory that one use the examples on the API-reference to understand the code.
-
-    And therein lies the problem: the examples. The d3 geo page @ https://observablehq.com/collection/@d3/d3-geo
-    literally has a Choropleth map as one of the examples as a reference.
-
-    So, this raises the questions: Is it fair play to use an example provided by the d3.js developers to solve the
-    project? Or, is it cheating?
-
-    After much contemplation, I decided that the examples in the API Reference are fair play. While, I absolutely will
-    not use project solutions clearly marked as the
-    solution for a project, I too absolutely won't limit the myself to excluding any portion of the official product
-    documentation for solving a project.
-
-    To me, referencing the official documentation can never be viewed as 'cheating'. Referencing documentation is a
-    mandatory part of programming. And, I am not going to cripple my ability
-    to solve the problem efficiently due to the project duplicating documentation.
-
-    As such, I implemented the solution in such a way that I avoided copy-pasting hte answer directly. And, I insist
-    that the project is insufficiently unique to test one's skills effectively.
-  </p>
-</body>
-
-<!--
-  KEEP https://bl.ocks.org/mbostock/4090848 
--->
-
+<!DOCTYPE html>
+<meta charset="utf-8">
 <style>
+  <style>.counties {
+    fill: none;
+  }
+
   .states {
-    fill: #ccc;
+    fill: none;
     stroke: #fff;
+    stroke-linejoin: round;
   }
 </style>
 
-<script src="https://d3js.org/d3-array.v1.min.js"></script>
-<script src="https://d3js.org/d3-geo.v1.min.js"></script>
+<script src="main.js"></script>
 
-<script src="https://d3js.org/d3-selection.v1.min.js"></script>
-
-<script src="https://d3js.org/d3-collection.v1.min.js"></script>
-<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
-<script src="https://d3js.org/d3-request.v1.min.js"></script>
-
-<script src="http://d3js.org/topojson.v1.min.js"></script>
+<svg width="960" height="600"></svg>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/topojson.v2.min.js"></script>
 
 <script>
-  /** API Reference:
-   * https://github.com/d3/d3-geo/blob/master/README.md#geoPath
-   * Examples; https://observablehq.com/collection/@d3/d3-geo
-   */
+  var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
 
-  var width = 960,
-    height = 500;
+  var unemployment = d3.map();
 
-  var projection = d3.geoAlbersUsa();
-  var path = d3.geoPath()
-    .projection(projection);
+  var path = d3.geoPath();
 
-  var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+  var x = d3.scaleLinear()
+    .domain([1, 10])
+    .rangeRound([600, 860]);
 
-  d3.json(
-    "https://raw.githubusercontent.com/no-stack-dub-sack/testable-projects-fcc/master/src/data/choropleth_map/counties.json",
-    function (error, us) {
-      svg.append("path")
-        .attr("class", "states")
-        .datum(topojson.feature(us, us.objects.states))
-        .attr("d", path);
+  var color = d3.scaleThreshold()
+    .domain(d3.range(2, 10))
+    .range(d3.schemeBlues[9]);
+
+  var g = svg.append("g")
+    .attr("class", "key")
+    .attr("transform", "translate(0,40)");
+
+  g.selectAll("rect")
+    .data(color.range().map(function (d) {
+      d = color.invertExtent(d);
+      if (d[0] == null) d[0] = x.domain()[0];
+      if (d[1] == null) d[1] = x.domain()[1];
+      return d;
+    }))
+    .enter().append("rect")
+    .attr("height", 8)
+    .attr("x", function (d) {
+      return x(d[0]);
+    })
+    .attr("width", function (d) {
+      return x(d[1]) - x(d[0]);
+    })
+    .attr("fill", function (d) {
+      return color(d[0]);
     });
+
+  g.append("text")
+    .attr("class", "caption")
+    .attr("x", x.range()[0])
+    .attr("y", -6)
+    .attr("fill", "#000")
+    .attr("text-anchor", "start")
+    .attr("font-weight", "bold")
+    .text("Unemployment rate");
+
+  g.call(d3.axisBottom(x)
+      .tickSize(13)
+      .tickFormat(function (x, i) {
+        return i ? x : x + "%";
+      })
+      .tickValues(color.domain()))
+    .select(".domain")
+    .remove();
+
+  /*
+    var promises = [
+      d3.json("https://d3js.org/us-10m.v1.json"),
+      d3.tsv("unemployment.tsv", function (d) {
+        unemployment.set(d.id, +d.rate);
+      })
+    ]
+
+    Promise.all(promises).then(ready)
+  */
+  
+    svg.append("g")
+      .attr("class", "counties")
+      .selectAll("path")
+      .data(topojson.feature(us, us.objects.counties).features)
+      .enter().append("path")
+      /*
+      .attr("fill", function (d) {
+        return color(d.rate = unemployment.get(d.id));
+      })
+      */
+      .attr("d", path)
+      .append("title")
+      .text(function (d) {
+        return d.rate + "%";
+      });
+
+    svg.append("path")
+      .datum(topojson.mesh(us, us.objects.states, function (a, b) {
+        return a !== b;
+      }))
+      .attr("class", "states")
+      .attr("d", path);
+
 </script>
-
-<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
-
-</html>

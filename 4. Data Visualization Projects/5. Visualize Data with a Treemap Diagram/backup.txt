@@ -1,0 +1,29 @@
+<body>
+  <h1 id="title">Visualize Data with a Choropleth Map Project</h1>
+  <p id="description">This is a Choropleth map of education data by state.</p>
+  <p>Author's Notes: This project was the ultimate moral dillema for me.
+
+    Up until this point, the Data Visualization projects could be mostly solved using just the API Reference and FCC
+    Lessons. However, for this project,
+    it is almost impossible to solve without using API Reference. Furthermore, the API Reference for d3-geo is very
+    hard to understand on it's own, which
+    makes it almost mandatory that one use the examples on the API-reference to understand the code.
+
+    And therein lies the problem: the examples. The d3 geo page @ https://observablehq.com/collection/@d3/d3-geo
+    literally has a Choropleth map as one of the examples as a reference.
+
+    So, this raises the questions: Is it fair play to use an example provided by the d3.js developers to solve the
+    project? Or, is it cheating?
+
+    After much contemplation, I decided that the examples in the API Reference are fair play. While, I absolutely will
+    not use project solutions clearly marked as the
+    solution for a project, I too absolutely won't limit the myself to excluding any portion of the official product
+    documentation for solving a project.
+
+    To me, referencing the official documentation can never be viewed as 'cheating'. Referencing documentation is a
+    mandatory part of programming. And, I am not going to cripple my ability
+    to solve the problem efficiently due to the project duplicating documentation.
+
+    As such, I implemented the solution in such a way that I avoided copy-pasting hte answer directly. And, I insist
+    that the project is insufficiently unique to test one's skills effectively.
+  </p>
