@@ -19,7 +19,7 @@ function palindrome(str) {
     }
 
     // Count up from bottom and down from top while comparing
-    //  each recod to verify if a palindrone. If any check fiails, return false.
+    //  each record to verify if a palindrone. If any check fails, return false.
     if (str[i] != str[str.length-i-1]) {
       return false;
     }

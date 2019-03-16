@@ -1,15 +1,15 @@
-function getMaxStep(steps, x) {
-    return "blank";
-}
-
-// Takes integer and returns it converted to roman numerals.
+/**
+ * Takes integer and returns it converted to Roman Numerals in a string.
+ * @param {number} num Some integer.
+ * @returns {string} Roman Numerals in a string.
+ */
 function convertToRoman(num) {
-
     // Handle edge cases.
     if (num < 1 || num > 5000)
         return "Null";
 
-    var roman_numerals = {
+    // Constant object containing all roman number symbols.
+    const romanNumerals = {
         1: "I",
         4: "IV",
         5: "V",
@@ -25,20 +25,19 @@ function convertToRoman(num) {
         1000: "M",
     };
 
-    var steps = Object.keys(roman_numerals);
-    var values = Object.values(roman_numerals);
+    // More variables based on object.
+    var steps = Object.keys(romanNumerals);
+    var values = Object.values(romanNumerals);
     var finalStr = "";
 
+    /* This section repeatedly attemps to find the highest Roman Numeral that can be subtracted from 'num' while keeping it above 0.
+        Once such a number is found, it subtracts that Roman Numerals integer amount from 'num' and adds the character to the finalStr. */
     while (num > 0)
     {
         for (var i = steps.length-1; i > -1; i--)
         {
-            console.log(steps[i] + " " + num);
-
             if (steps[i] <= num)
             {
-                console.log(steps[i] + " " + num);
-
                 num = num - steps[i];
                 finalStr = finalStr + values[i];
                 break;
@@ -46,8 +45,7 @@ function convertToRoman(num) {
         }
     }
     
-    console.log("Num: " + num + " FinalStr: " + finalStr);
-
+    // Return our final roman numeral string.
     return finalStr;
 }
 
