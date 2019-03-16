@@ -1,5 +1,3 @@
-console.log("Main JS Linked and Loaded. X set");
-
 var sample = {
   "name": "Eve",
   "children": [

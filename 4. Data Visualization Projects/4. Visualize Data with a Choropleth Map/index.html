@@ -12,192 +12,207 @@
   }
 </style>
 
-<script src="main.js"></script>
 <h1 id="title">Choropleth Map</h1>
 <h3 id="description">This is a cool map</h3>
 <svg width="960" height="600"></svg>
+
+<!-- Codepen link: https://codepen.io/DonTechSite/pen/OqZzvZ
+    Note 1: Github is always the source of truth for the most up to date projects.
+      https://github.com/Destro168/freeCodeCamp-Projects -->
+
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script src="https://d3js.org/topojson.v2.min.js"></script>
 
 <script>
 
-  // Highlight was data validation, which let me learn some interesting geography facts like how Arlington County and Falls Church City overlap.
-
-  // Credit to: https://bl.ocks.org/adamjanes/6cf85a4fd79e122695ebde7d41fe327f
-
-  // Base variable initializations.
-  
-  var arr = [d3.min(educationData, (d) => d["bachelorsOrHigher"]),
-    d3.max(educationData, (d) => d["bachelorsOrHigher"])];
-  
-  var fipsToBachObj = {};
-  var fipsToAreaName = {};
-
-  educationData.forEach(v => {
-    fipsToBachObj[v["fips"]] = v["bachelorsOrHigher"];
-    fipsToAreaName[v["fips"]] = v["area_name"];
-  });
-
-  var svg = d3.select("svg");
-
-  // Learned about 'Unary plus' from here. Very neat!
-  // https://stackoverflow.com/questions/6682997/what-is-the-purpose-of-a-plus-symbol-before-a-variable + MDN
-  var width = +svg.attr("width");
-  var height = +svg.attr("height");
-
-  var unemployment = d3.map();
-  var path = d3.geoPath();
-
-  var x = d3.scaleLinear()
-    .domain([arr[0], arr[1]])
-    .rangeRound([600, 860]);
-  
-  // Create array for color data.
-  // Thank you https://stackoverflow.com/questions/45111265/choropleth-map-scale-and-legend
-  var arr2 = [];
-  var divisor = arr[1] / 10;
-
-  for (var i = 1; i < 9; i++) {
-    arr2[i-1] = i * 10;
-  }
-
-  var color = d3.scaleThreshold()
-    .domain(arr2)
-    .range(d3.schemeBlues[9]);
-  
-  //
-  // * Create the tooltip!
-  //
-
-  // Add tooltip.
-  const tooltip = d3
-    .select("body")
-    .append("div");
-  
-  const tooltipText = tooltip.append("title")
-    .attr("class", "tooltip")
-    .attr("id", "tooltip")
-    .style("display", 'none');
-  
-  //
-  // * Create the legend!
-  //
-
-  // Creates element for the legend.
-  var g = svg.append("g")
-    .attr("id", "legend")
-    .attr("transform", "translate(0,40)");
-  
-  // Add boxes to the legend.
-  g.selectAll("rect")
-    .data(color.range().map(function (d) {
-      d = color.invertExtent(d);
-      if (d[0] == null) d[0] = arr2[0];
-      if (d[1] == null) d[1] = arr2[arr2.length-1];
-      return d;
-    }))
-    .enter().append("rect")
-    .attr("height", 8)
-    .attr("x", function (d) {
-      return x(d[0]);
-    })
-    .attr("width", function (d) {
-      return x(d[1]) - x(d[0]);
-    })
-    .attr("fill", function (d) {
-      return color(d[0]);
-    });
-
-  // Adds title for legend.
-  g.append("text")
-    .attr("class", "caption")
-    .attr("x", x.range()[0])
-    .attr("y", -6)
-    .attr("fill", "#000")
-    .attr("text-anchor", "start")
-    .attr("font-weight", "bold")
-    .text("Bachelor's Degree or Higher %");
-    
-  // Adds ticks to the axis in legend.
-  g.call(d3.axisBottom(x)
-      .tickSize(13)
-      .tickFormat(function (x, i) {
-        if (i == 0) {
-          return x + "%";
-        }
-        else if (i == 6) {
-          return x + "+";
-        }
-        else {
-          return x;
-        }
-      }))
-    .select(".domain")
-    .remove();
+  var educationData,
+    us;
 
   //
-  // * Add the map.
+  // Load and initialize raw data from github
   //
-  
-  // Add the counties with tooltips.
-  svg.append("g")
-    .selectAll("path")
-    .data(topojson.feature(us, us.objects.counties).features)
-    .enter().append("path")
-    .attr("class", "county")
-    .attr("data-fips", (d) => d["id"])
-    .attr("data-education", (d) => fipsToBachObj[d["id"]])
-    .attr("fill", function (d,i) {
-      return color(fipsToBachObj[d["id"]]);
-    })
-    .attr("d", path)
-    .on("mouseover", function(d, i) {
-      d3.select(this).style("fill", "gold");
+
+  // Future Learning Sources: https://www.w3schools.com/xml/xml_http.asp
+  var url1 = 'https://raw.githubusercontent.com/no-stack-dub-sack/testable-projects-fcc/master/src/data/choropleth_map/for_user_education.json';
+  var url2 = 'https://raw.githubusercontent.com/no-stack-dub-sack/testable-projects-fcc/master/src/data/choropleth_map/counties.json';
+
+  var req = new XMLHttpRequest();
+  req.open("GET", url1, true);
+  req.send();
+  req.onload = function () {
+    // Get data and store in variable.
+    const educationData = JSON.parse(req.responseText);
+
+    var req2 = new XMLHttpRequest();
+    req2.open("GET", url2, true);
+    req2.send();
+    req2.onload = function () {
+      const us = JSON.parse(req2.responseText);
+
+      // Highlight was data validation, which let me learn some interesting geography facts like how Arlington County and Falls Church City overlap.
+
+      // Credit to: https://bl.ocks.org/adamjanes/6cf85a4fd79e122695ebde7d41fe327f
+
+      // Base variable initializations.
       
-      tooltip.select('#tooltip')
-        .attr("data-education", () => fipsToBachObj[d["id"]])
-        .text('')
-        .style("display", 'inline');
-    })
-    .on("mouseout", function(d) {
-      d3.select(this)
-        .transition()
-        .duration(500)
-        .style("fill", color(fipsToBachObj[d["id"]]));
+      var arr = [d3.min(educationData, (d) => d["bachelorsOrHigher"]),
+        d3.max(educationData, (d) => d["bachelorsOrHigher"])];
       
-      tooltip.select('#tooltip')
+      var fipsToBachObj = {};
+      var fipsToAreaName = {};
+
+      educationData.forEach(v => {
+        fipsToBachObj[v["fips"]] = v["bachelorsOrHigher"];
+        fipsToAreaName[v["fips"]] = v["area_name"];
+      });
+
+      var svg = d3.select("svg");
+
+      // Learned about 'Unary plus' from here. Very neat!
+      // https://stackoverflow.com/questions/6682997/what-is-the-purpose-of-a-plus-symbol-before-a-variable + MDN
+      var width = +svg.attr("width");
+      var height = +svg.attr("height");
+
+      var unemployment = d3.map();
+      var path = d3.geoPath();
+
+      var x = d3.scaleLinear()
+        .domain([arr[0], arr[1]])
+        .rangeRound([600, 860]);
+      
+      // Create array for color data.
+      // Thank you https://stackoverflow.com/questions/45111265/choropleth-map-scale-and-legend
+      var arr2 = [];
+      var divisor = arr[1] / 10;
+
+      for (var i = 1; i < 9; i++) {
+        arr2[i-1] = i * 10;
+      }
+
+      var color = d3.scaleThreshold()
+        .domain(arr2)
+        .range(d3.schemeBlues[9]);
+      
+      //
+      // * Create the tooltip!
+      //
+
+      // Add tooltip.
+      const tooltip = d3
+        .select("body")
+        .append("div");
+      
+      const tooltipText = tooltip.append("title")
+        .attr("class", "tooltip")
+        .attr("id", "tooltip")
         .style("display", 'none');
-    })
-    .append("title")
-    .text(function (d, i) {
-      return fipsToAreaName[d["id"]] + " - " + fipsToBachObj[d["id"]] + "%";
-    });
+      
+      //
+      // * Create the legend!
+      //
 
-  // Add the state lines.
-  svg.append("path")
-    .datum(topojson.mesh(us, us.objects.states, function (a, b) {
-      return a !== b;
-    }))
-    .attr("class", "states")
-    .attr("d", path);
+      // Creates element for the legend.
+      var g = svg.append("g")
+        .attr("id", "legend")
+        .attr("transform", "translate(0,40)");
+      
+      // Add boxes to the legend.
+      g.selectAll("rect")
+        .data(color.range().map(function (d) {
+          d = color.invertExtent(d);
+          if (d[0] == null) d[0] = arr2[0];
+          if (d[1] == null) d[1] = arr2[arr2.length-1];
+          return d;
+        }))
+        .enter().append("rect")
+        .attr("height", 8)
+        .attr("x", function (d) {
+          return x(d[0]);
+        })
+        .attr("width", function (d) {
+          return x(d[1]) - x(d[0]);
+        })
+        .attr("fill", function (d) {
+          return color(d[0]);
+        });
 
-/*
-Legacy code:
+      // Adds title for legend.
+      g.append("text")
+        .attr("class", "caption")
+        .attr("x", x.range()[0])
+        .attr("y", -6)
+        .attr("fill", "#000")
+        .attr("text-anchor", "start")
+        .attr("font-weight", "bold")
+        .text("Bachelor's Degree or Higher %");
+        
+      // Adds ticks to the axis in legend.
+      g.call(d3.axisBottom(x)
+          .tickSize(13)
+          .tickFormat(function (x, i) {
+            if (i == 0) {
+              return x + "%";
+            }
+            else if (i == 6) {
+              return x + "+";
+            }
+            else {
+              return x;
+            }
+          }))
+        .select(".domain")
+        .remove();
 
-.attr("fill", function (d) {
-  return color(d.rate = unemployment.get(d.id));
-})
+      //
+      // * Add the map.
+      //
+      
+      // Add the counties with tooltips.
+      svg.append("g")
+        .selectAll("path")
+        .data(topojson.feature(us, us.objects.counties).features)
+        .enter().append("path")
+        .attr("class", "county")
+        .attr("data-fips", (d) => d["id"])
+        .attr("data-education", (d) => fipsToBachObj[d["id"]])
+        .attr("fill", function (d,i) {
+          return color(fipsToBachObj[d["id"]]);
+        })
+        .attr("d", path)
+        .on("mouseover", function(d, i) {
+          d3.select(this).style("fill", "gold");
+          
+          tooltip.select('#tooltip')
+            .attr("data-education", () => fipsToBachObj[d["id"]])
+            .text('')
+            .style("display", 'inline');
+        })
+        .on("mouseout", function(d) {
+          d3.select(this)
+            .transition()
+            .duration(500)
+            .style("fill", color(fipsToBachObj[d["id"]]));
+          
+          tooltip.select('#tooltip')
+            .style("display", 'none');
+        })
+        .append("title")
+        .text(function (d, i) {
+          return fipsToAreaName[d["id"]] + " - " + fipsToBachObj[d["id"]] + "%";
+        });
 
-var promises = [
-  d3.json("https://d3js.org/us-10m.v1.json"),
-  d3.tsv("unemployment.tsv", function (d) {
-    unemployment.set(d.id, +d.rate);
-  })
-]
+      // Add the state lines.
+      svg.append("path")
+        .datum(topojson.mesh(us, us.objects.states, function (a, b) {
+          return a !== b;
+        }))
+        .attr("class", "states")
+        .attr("d", path);
+        };
+      };
 
-Promise.all(promises).then(ready)
-*/
+
 </script>
 
 <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
