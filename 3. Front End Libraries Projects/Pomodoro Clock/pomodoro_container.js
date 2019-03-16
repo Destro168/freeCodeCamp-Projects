@@ -29,8 +29,8 @@ class Pomodoro extends React.Component {
       timerType: 'Session',
       remainingBreaks: 3,
       userInput: {
-        sessionLength: 1,
-        breakLength: 1
+        sessionLength: 25,
+        breakLength: 5
       },
       remainingTime: {
         mins: 25,
@@ -105,6 +105,9 @@ class Pomodoro extends React.Component {
 
           if (state["remainingTime"]["secs"] == 0) {
             (state["timerType"] == 'Session') ? state["timerType"] = 'Break' : state["timerType"] = 'Session';
+
+            // Play the alarm.
+            document.getElementById('beep').play();
           }
         }
         else if (state["remainingTime"]["mins"] > 0) {
@@ -121,24 +124,18 @@ class Pomodoro extends React.Component {
               state["remainingTime"]["mins"] = state["userInput"]["sessionLength"];
               state["remainingTime"]["secs"] = 0;
               state["remainingBreaks"] -= 1;
-
-              console.log("Track Session: ", state["timerType"], state["userInput"]["sessionLength"], state["remainingTime"]["mins"], state["remainingTime"]["secs"]);
             }
 
             // If a break just ended, do a session.
             else if (state["timerType"] == 'Break') {
               state["remainingTime"]["mins"] = state["userInput"]["breakLength"];
               state["remainingTime"]["secs"] = 0;
-              
-              console.log("Track Break: ", state["timerType"], state["userInput"]["breakLength"], state["remainingTime"]["mins"], state["remainingTime"]["secs"]);
             }
           }
           // Otherwise, end.
           else {
             state["timerType"] = 'Session';
             state["timerState"] = 'off';
-
-            // Play the alarm.
           }
         }
         
@@ -188,6 +185,8 @@ class Pomodoro extends React.Component {
     this.setState(defaultState);
 
     // Audio stops playing and is rewound to the begining. (TODO)
+    document.getElementById('beep').pause();
+    document.getElementById('beep').currentTime = 0;
   }
 
   /**
@@ -275,44 +274,67 @@ class Pomodoro extends React.Component {
   render() {
     return (
       <div id="main">
+
         <h1 id="title">Pomodoro Clock</h1>
-        <h3>
-          Author's Note: The highlight of this project was really the count-down function for time.
+        <div id="project">
+          <div>
+            <div className="topHalf">
+              <div className="mainSection">
+                <p id="break-label">Break Length</p>
 
-          It required me to demonstrate mastery of recusion and state scope to implement a proper solution.
+                <div className="arrowBlock">
+                  <button id="break-decrement" onClick={this.breakDecrement} className="fas fa-arrow-down"></button><br /><br />
+                  <p className="pomo_p" id="break-length" defaultValue="5">{this.state.userInput.breakLength}</p>
+                  <button id="break-increment" onClick={this.breakIncrement} className="fas fa-arrow-up"></button>
+                </div>
+              </div>
 
-          The solution that I created recursively calls a count-down function while remaining state aware due to
-          the parent function being passed as the argument 'this'. This lets the count-down function exit properly,
-          rather than keep calling itself, once the timer's state changes to anything other than 'on'.
+              <div className="mainSection">
+                <p id="session-label">Session Length</p>
 
-          A few traps that I fell into while coding this were to use a while loop to attempt to handle the count-down. Doing this
-          even with a setTimeout() function fails because you will constantly call the setTimeout function even before the first one
-          runs.
+                <div className="arrowBlock">
+                  <button id="session-decrement" onClick={this.sessionDecrement} className="fas fa-arrow-down"></button>
+                  <p className="pomo_p" id="session-length" defaultValue="25">{this.state.userInput.sessionLength}</p>
+                  <button id="session-increment" onClick={this.sessionIncrement} className="fas fa-arrow-up"></button>
+                </div>
+              </div>
+            </div>
 
-          And, the second trap that I fell into was using a local state variable, rather than 'this' to pass state information
-          to the count-down function.
+            <div className="mainSection">
+              <div className="clockRing">
+              <p id="timer-label" defaultValue="Session">{this.state.timerType}</p>
+              <p id="time-left">{this.getFormattedTime(this.state.remainingTime.mins)}:{this.getFormattedTime(this.state.remainingTime.secs)}</p>
+              <button id="start_stop" onClick={this.clickStartStop}>Start/Stop</button>
+              <button id="reset" onClick={this.clickReset}>Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <audio src='audio/1.mp3' className="beep" id="beep">
+          <source></source>
+        </audio>
+        <div id="notes">
+          <h3>
+            <p>Author's Note: This project was quite difficult to complete. I created a solution that 'worked', but the FCC tests wouldn't pass it.
+            So, I wound up making my state variable for clickStartStop() global. This enabled my project to pass the tests.</p>
+            
+            <p>There were really two (2) big hhighlights for this project. First, there is the count-down algorithm for time. clickStartStop()
+            calls doClockTick(), which recursively calls itself until the state changes from 'on'. As doClockTick() is called, the remaining
+            time state properties are decreased. It will also change the state based on certain state values to enable the Pomodoro to progress
+            through Session and Break phases.</p>
 
-          Thankfully, neither trap required much time or effort to resolve. This was a very fun challenge overall!
-        </h3>
-        <div id="clock">
-          <p id="session-label">Session Length</p>
-          <button id="session-increment" onClick={this.sessionIncrement}>Session +</button>
-          <button id="session-decrement" onClick={this.sessionDecrement}>Session -</button>
+            <p>Next, there is the fact that there are 29 user stories to test against. Jeez, that's a lot. That's why I made sure to plan out
+              my project and create a minimal skeleton for the project before coding anything significant. This can be viewed in the github
+              commit history. Planning is overpowered! It made the large number of requirements quite easy to track and manage.</p>
 
-          <p id="break-label">Break Length</p>
-          <button id="break-increment" onClick={this.breakIncrement}>Break +</button>
-          <button id="break-decrement" onClick={this.breakDecrement}>Break -</button><br /><br />
-          
-          <p id="session-length" defaultValue="25">{this.state.userInput.sessionLength}</p>
-          <p id="break-length" defaultValue="5">{this.state.userInput.breakLength}</p>
+            <p>A few traps that I fell into while coding this were to use a while loop to attempt to handle the count-down. Doing this
+            with a setTimeout() function fails because delayed setTimeout() calls will be established before one even runs (within 1 second!).
+            
+            And, the second trap that I fell into was using a local state variable, rather than 'this' to pass state information
+            to the count-down function.
 
-          <p id="timer-label" defaultValue="Session">{this.state.timerType}</p>
-          
-          <p id="time-left">{this.getFormattedTime(this.state.remainingTime.mins)}:{this.getFormattedTime(this.state.remainingTime.secs)}</p>
-          <p id="timer-state">Timer State: {this.state.timerState} / Type: {this.state.timerType} / RemainingBreaks: {this.state.remainingBreaks}</p>
-
-          <button id="start_stop" onClick={this.clickStartStop}>Start/Stop</button>
-          <button id="reset" onClick={this.clickReset}>Reset</button>
+            Thankfully, neither trap required much time or effort to resolve. This was a very fun challenge overall!</p>
+          </h3>
         </div>
       </div>
     );

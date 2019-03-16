@@ -3,25 +3,25 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="description" content="Drum Machine">
+  <meta name="description" content="Markdown Previewer">
   <meta name="author" content="Donad Abdlilah-Robinson">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Drum Machine</title>
+  <title>Markdown Previewer</title>
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
     crossorigin="anonymous">
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- Codepen link: https://codepen.io/DonTechSite/pen/BbxwOa
+  <!-- Codepen link: https://codepen.io/DonTechSite/pen/xBjXwr
     Note 1: Github is always the source of truth for the most up to date projects.
       https://github.com/Destro168/freeCodeCamp-Projects
     Note 2: Codepen link won't load because I can't get React to work on Codepen. -->
 </head>
 
 <body>
-  <div id="drum_machine_container"></div>
+  <div id="markdown_editor_container"></div>
 </body>
 
 <!-- Boostrap -->
@@ -39,8 +39,11 @@
 <!-- JSX -->
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
+<!-- Marked -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.6.1/marked.min.js"></script>
+
 <!-- Load our React component. -->
-<script src="drum_machine_container.js" type="text/babel"></script>
+<script type="text/babel" src="markdown_previewer_container.js"></script>
 
 <!-- Add FCC Tester -->
 <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>

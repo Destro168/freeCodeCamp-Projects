@@ -1,7 +1,5 @@
 'use strict';
 
-const e = React.createElement;
-
 /**
 User Story #1: I should be able to see an outer container with a corresponding id="drum-machine" that contains all other elements.
 
@@ -99,19 +97,21 @@ class DrumMachine extends React.Component {
     return (
       <div id="main">
         <h1 id="title">Drum Machine</h1>
-        <h3>
-          Author's Note: -
-        </h3>
+        <h3 id="description">This drum machine plays a variety of banjo sounds. Simply click a button or press the button's label on your keyboard to play a sound.</h3>
         <div id="drum-machine">
           <div id="display">
             {drumpadButtons}
-            <p>{this.state.currentAudioDescription}</p>
           </div>
+          <p>{this.state.currentAudioDescription}</p>
         </div>
+        <h3 id="authorsNote">
+          Author's Note: - This drum machine was very straightforward to make.
+          The highlight for it was assigning onkeypress events to each key's button in the React lifecycle function 'componnetDidMount'.
+        </h3>
       </div>
     );
   }
 }
 
 const domContainer = document.querySelector('#drum_machine_container');
-ReactDOM.render(e(DrumMachine), domContainer);
+ReactDOM.render(<DrumMachine />, domContainer);

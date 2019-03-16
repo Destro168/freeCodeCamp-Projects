@@ -1,0 +1,25 @@
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: rgb(75, 75, 75);
+    height: 100%;
+    width: 100%;
+  }
+  
+  div#like_button_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  div#quote-box {
+    margin-top: 20px;
+    background-color: white;
+    width: 500px;
+    text-align: center;
+  }
