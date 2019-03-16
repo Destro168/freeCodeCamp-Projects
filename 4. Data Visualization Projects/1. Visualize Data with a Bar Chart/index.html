@@ -64,30 +64,41 @@
     -- TO INTEGRATE --
 
     Note: There is a very important moral dillema that has to be To really emphasize the importance of not cheating, t
-    
-    I could go to https://github.com/d3/d3/wiki/Gallery and go straight to the Choropleth example at 'https://observablehq.com/@d3/choropleth'.
-    But, a part of me feels like that is cheating. I mean, I am looking at a 'solution' to the problem, so it's cheating right?
-    However, the example is a part of the official documentation. So, how could referencing the wiki's material for the product be cheating?
-    I could then blame the problem for being too general in this case and argue that arbitrarily limiting myself to only the Reference API and FCC lessons
-    is silly. But, again in reverse, if I use the wiki example as a template for my solution, will I really be doing work meaningful enough to be credited to
-    myself as an 'innovative' solution. 
-    
-    Naturally, this is quite the dillema. So, I made a decision. I'll try using the API Reference only at first. If after 2 hours I can't make any progress, then
+
+    I could go to https://github.com/d3/d3/wiki/Gallery and go straight to the Choropleth example at
+    'https://observablehq.com/@d3/choropleth'.
+    But, a part of me feels like that is cheating. I mean, I am looking at a 'solution' to the problem, so it's
+    cheating right?
+    However, the example is a part of the official documentation. So, how could referencing the wiki's material for the
+    product be cheating?
+    I could then blame the problem for being too general in this case and argue that arbitrarily limiting myself to
+    only the Reference API and FCC lessons
+    is silly. But, again in reverse, if I use the wiki example as a template for my solution, will I really be doing
+    work meaningful enough to be credited to
+    myself as an 'innovative' solution.
+
+    Naturally, this is quite the dillema. So, I made a decision. I'll try using the API Reference only at first. If
+    after 2 hours I can't make any progress, then
     I'll reference the example. I think this is very fair.
-    
+
     -- / TO INTEGRATE --
 
-  
-    -- TO INTEGRATE --
-    
-    The tests are not always perfect. For example, the Tree Map Test mentions in the description to use axes. However, this test has nothing to do with axes.
-    
-    Thus, take all tests with a grain of salt. Here is the quote: 
 
-    "You can use HTML, JavaScript, CSS, and the D3 svg-based visualization library. The tests require axes to be generated using the D3 axis property,
-    which automatically generates ticks along the axis. These ticks are required for passing the D3 tests because their positions are used to determine alignment of graphed elements.
-    You will find information about generating axes at https://github.com/d3/d3/blob/master/API.md#axes-d3-axis. Required (non-virtual) DOM elements are queried on the moment of each test.
-    If you use a frontend framework (like Vue for example), the test results may be inaccurate for dynamic content. We hope to accommodate them eventually,
+    -- TO INTEGRATE --
+
+    The tests are not always perfect. For example, the Tree Map Test mentions in the description to use axes. However,
+    this test has nothing to do with axes.
+
+    Thus, take all tests with a grain of salt. Here is the quote:
+
+    "You can use HTML, JavaScript, CSS, and the D3 svg-based visualization library. The tests require axes to be
+    generated using the D3 axis property,
+    which automatically generates ticks along the axis. These ticks are required for passing the D3 tests because their
+    positions are used to determine alignment of graphed elements.
+    You will find information about generating axes at https://github.com/d3/d3/blob/master/API.md#axes-d3-axis.
+    Required (non-virtual) DOM elements are queried on the moment of each test.
+    If you use a frontend framework (like Vue for example), the test results may be inaccurate for dynamic content. We
+    hope to accommodate them eventually,
     but these frameworks are not currently supported for D3 projects."
 
 
@@ -135,6 +146,20 @@
         dataValues.push(dataset[i][1]);
         tickValues.push(getDate(dataset[i][0]));
       }
+
+      //
+      // * Create the tooltip!
+      //
+
+      // Add tooltip.
+      const tooltip = d3
+        .select("body")
+        .append("div");
+
+      const tooltipText = tooltip.append("title")
+        .attr("class", "tooltip")
+        .attr("id", "tooltip")
+        .style("display", 'none');
 
       const w = 1000;
       const h = 764;
@@ -191,11 +216,20 @@
           d3.selectAll('.bar').style("fill", "#afceff");
           d3.select('.barId' + i).style("fill", "ff1414");
           d3.select('.tooltipId' + i).style('fill', 'black');
-          d3.select('.tooltipId' + i).attr('opacity', 1);
+          d3.select('.tooltipId' + i).attr('display', 'inline');
+
+          tooltip.select('#tooltip')
+            .attr("data-date", () => dataset[i][0])
+            .text('')
+            .style("display", 'inline');
+
         }).on("mouseout", (d, i) => {
           d3.selectAll('.bar').style("fill", "blue");
           d3.select('.tooltipId' + i).style('fill', 'none');
-          d3.select('.tooltipId' + i).attr('opacity', '0');
+          d3.select('.tooltipId' + i).attr('display', 'none');
+
+          tooltip.select('#tooltip')
+            .style("display", 'none');
         });
 
       // Add tooltips.

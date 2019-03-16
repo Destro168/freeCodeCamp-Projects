@@ -24,7 +24,6 @@
   <svg id="svg1" style="margin: 0 auto; display: block;"></svg>
 </head>
 
-
 <style>
   body {
     font-family: Arial, Helvetica, sans-serif;
@@ -32,24 +31,8 @@
     font-size: 12px;
   }
 
-  #tooltip {
-    position: absolute;
-    left: 0px;
-    top: 450px;
-    z-index: 1;
+  .tile {
     stroke: black;
-  }
-
-  #tooltipText {
-    stroke: none;
-  }
-  
-  #treeMap {
-    stroke: black;
-  }
-
-  .tileText {
-    stroke: none;
   }
 </style>
 
@@ -84,38 +67,19 @@
       g_MouseXPos = window.event.clientX;
       g_MouseYPos = window.event.clientY;
     }
-    
+
     g_MouseXPos += window.pageXOffset + 20;
     g_MouseYPos += window.pageYOffset - 450;
-    
+
     if (g_MouseXPos > 1300) {
       g_MouseXPos = 1300;
     }
 
-    if (g_MouseYPos > 3900) {
+    if (g_MouseYPos < 25) {
+      g_MouseYPos = 25;
+    } else if (g_MouseYPos > 3900) {
       g_MouseYPos = 3900;
     }
-  }
-
-  function setTooltipHidden() {
-    d3.select('#tooltipText').style('fill', 'none');
-    d3.select('#tooltipBg').style("fill", "none");
-  }
-
-  function setTooltipVisible() {
-    d3.select('#tooltipText').style('fill', 'black');
-    d3.select('#tooltipBg').style("fill", "#c4daff");
-  }
-
-  function updateTooltipPosition() {
-    if (!g_MouseXPos || !g_MouseYPos) {
-      return;
-    }
-
-    d3.select('#tooltipText').attr("x", g_MouseXPos + 10);
-    d3.select('#tooltipText').attr("y", g_MouseYPos + 20);
-    d3.select('#tooltipBg').attr("x", g_MouseXPos);
-    d3.select('#tooltipBg').attr("y", g_MouseYPos);
   }
 
   // Helper function to get an object of random colors.
@@ -197,51 +161,6 @@
     y1: -1
   };
 
-  // This function is used by the tooltips to update tooltip text base don position.
-  function doMouseMove() {
-    // Always exit if g_MouseXPos and g_MouseYPos are not ready to be used.
-    if (!g_MouseXPos || !g_MouseYPos) {
-      return;
-    }
-    
-    // Always update tooltip position.
-    updateTooltipPosition();
-
-    // Otherwise, find which leaf it is in and update boundary data and node html.
-    for (let index = 0; index < root.leaves().length; index++) {
-      const element = root.leaves()[index];
-
-      if (g_MouseXPos >= element.x0 && g_MouseXPos <= element.x1 && g_MouseYPos >= element.y0 && g_MouseYPos <= element
-        .y1) {
-        // Update g_tooltipBoundaryData for future boundary checking.
-        g_tooltipBoundaryData.x0 = element.x0;
-        g_tooltipBoundaryData.x1 = element.x1;
-        g_tooltipBoundaryData.y0 = element.y0;
-        g_tooltipBoundaryData.xy1 = element.y1;
-
-        console.log("TEST");
-        // Update the html for the tooltip using found index.
-        d3.select('#tooltipText')
-          .html((d, i) => {
-            var text = [
-              ...convertWordsToLines(['Name: ', ...root.leaves()[index]["data"]["name"].split(' ')], 5),
-              'Category: '.concat(root.leaves()[index]["data"]["category"]),
-              'Value: '.concat(root.leaves()[index]["data"]["value"])
-            ];
-
-            // Return our base name data in line format (subFunc1) wrapped by tSpans (subFunc2).
-            return wrapWithTspan(text, g_MouseXPos + 10, g_MouseYPos);
-          });
-
-        d3.select('#tooltip')
-          .attr('data-value', root.leaves()[index]["data"]["value"]);
-
-        // Always return at this point to exit loop.
-        return;
-      }
-    }
-  }
-
   function createLegend() {
 
     //
@@ -310,11 +229,50 @@
   }
 
 
+  function updateTooltip(i) {
+    if (!g_MouseXPos || !g_MouseYPos) {
+      return;
+    }
+    
+    d3.select('#tooltipText')
+      .attr('x', g_MouseXPos)
+      .attr('y', g_MouseYPos);
+
+    d3.select('#tooltipBg')
+      .attr('x', g_MouseXPos)
+      .attr('y', g_MouseYPos);
+
+    d3.select('#tooltipText').html(() => {
+      var text = [
+        ...convertWordsToLines(['Name: ', ...root.leaves()[i]["data"]["name"].split(' ')], 5),
+        'Category: '.concat(root.leaves()[i]["data"]["category"]),
+        'Value: '.concat(root.leaves()[i]["data"]["value"])
+      ];
+
+      // Return our base name data in line format (subFunc1) wrapped by tSpans (subFunc2).
+      return wrapWithTspan(text, g_MouseXPos, g_MouseYPos);
+    })
+  }
+
   //
   // * Function to create the Tree Map.
   //
 
   function createTreeMap() {
+
+    //
+    // * Create the tooltip!
+    //
+
+    // Add tooltip.
+    const tooltip = d3.select("body")
+      .append("div");
+
+    const tooltipText = tooltip.append("title")
+      .attr("class", "tooltip")
+      .attr("id", "tooltip")
+      .style("display", 'none');
+
     //
     // * Add the TreeMap
     //
@@ -346,6 +304,28 @@
       .style('fill', d => {
         return categoryColorData[d["data"]["category"]];
       })
+      .on('mousemove', (d, i) => {
+        updateTooltip(i);
+      })
+      .on("mouseover", (d, i) => {
+        d3.select('#tooltipBg').style('display', 'inline');
+        d3.select('#tooltipText').style('display', 'inline');
+
+        updateTooltip(i);
+
+        tooltip.select('#tooltip')
+          .attr("data-value", () => d["data"]["value"])
+          .text('a')
+          .style("display", 'inline');
+      })
+      .on("mouseout", (d, i) => {
+        d3.select('#tooltipBg').style('display', 'none');
+        d3.select('#tooltipText').style('display', 'none');
+        
+        // Remove 'invisible tooltip'.
+        tooltip.select('#tooltip')
+          .style("display", 'none');
+      });
 
     // Add text to each tile.
     nodes.append('text')
@@ -356,63 +336,35 @@
       });
 
     //
-    // * Time to add our tooltip.
+    // * Time to add tooltips.
     //
 
-    // Tooltip canvas.
-    var tooltip = d3.select('body')
-      .append('svg')
-      .attr('id', 'tooltip')
-      .attr('width', 1600)
-      .attr('height', 4200)
-      .on("mousemove", () => {
-        doMouseMove()
-      })
-      .on("mouseover", () => {
-        setTooltipVisible();
-      })
-      .on("mouseout", () => {
-        setTooltipHidden();
-      });
-
-
-
-    // Add tooltip backgrounds.
-    tooltip
-      .append("g")
+    // Add tooltip background.
+    d3.select('g.treeMap')
       .append("rect")
       .attr('id', 'tooltipBg')
-      .attr("class", () => "tooltipBg")
-      .style('fill', 'none')
-      .attr('height', () => '150px')
-      .attr('width', () => '300px')
-      .attr("x", () => 0)
-      .attr("y", () => 0)
-      .on("mousemove", () => {
-        doMouseMove()
-      })
-      .on("mouseover", () => {
-        setTooltipVisible();
-      })
-      .on("mouseout", () => {
-        setTooltipHidden();
+      .style('fill', '#c4daff')
+      .style('display', 'none')
+      .attr('height', (d, i) => '100px')
+      .attr('width', (d, i) => '300px')
+      .attr("x", (d, i) => 0)
+      .attr("y", (d, i) => 0)
+      .on('mousemove', (d, i) => {
+        updateTooltip(i);
       });
 
-
-    // Add tooltips.
-    tooltip.append("text")
+    // Add tooltip.
+    d3.select('g.treeMap')
+      .append("text")
       .attr('id', 'tooltipText')
-      .attr("class", (d, i) => "tooltipText")
-      .attr('height', (d, i) => '150px')
+      .style('display', 'none')
+      .attr('height', (d, i) => '100px')
       .attr('width', (d, i) => '300px')
-      .on("mousemove", (d, i) => () => {
-        doMouseMove()
-      })
-      .on("mouseover", () => {
-        setTooltipVisible();
-      })
-      .on("mouseout", () => {
-        setTooltipHidden();
+      .attr("x", (d, i) => 0)
+      .attr("y", (d, i) => 0)
+      .html('')
+      .on('mousemove', (d, i) => {
+        updateTooltip(i);
       });
   };
 
@@ -441,7 +393,8 @@
   createTreeMap();
 
   // Set JS to update mouse coord variables when user moves mouse on an element.
-  [document.getElementById("tooltip"),
+
+  [document.getElementById("treeMap"),
     document.getElementById("tooltipBg"),
     document.getElementById("tooltipText")
   ].forEach(v => v.onmousemove = findScreenCoords);

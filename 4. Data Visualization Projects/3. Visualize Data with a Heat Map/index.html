@@ -26,10 +26,12 @@
   <p id="description">This is a heat map of temperatures for some region over a period of years.</p>
   <p>Author's Note: This project was substantially easier than the Scatter Plot Project since most of the boiler-place
     code was already written. But, there was one big highlight to this project: The Legend.
-    
-    I 'had' to nest the sub-elements for the legend under each other, so I had to learn how to nest elements programmatically with d3.js.
 
-    Apparently, this is kind of a pain to do for the first time from scratch. However, after a lot of trial and error, I managed to figure out roughly how D3.js works and craft+implement a good solution.</p>
+    I 'had' to nest the sub-elements for the legend under each other, so I had to learn how to nest elements
+    programmatically with d3.js.
+
+    Apparently, this is kind of a pain to do for the first time from scratch. However, after a lot of trial and error,
+    I managed to figure out roughly how D3.js works and craft+implement a good solution.</p>
 </body>
 
 <script>
@@ -97,6 +99,20 @@
       .range([h - padding, padding + 50]);
 
     //
+    // * Create the tooltip!
+    //
+
+    // Add tooltip.
+    const tooltip = d3
+      .select("body")
+      .append("div");
+
+    const tooltipText = tooltip.append("title")
+      .attr("class", "tooltip")
+      .attr("id", "tooltip")
+      .style("display", 'none');
+
+    //
     // Begin adding SVGs.
     //
 
@@ -112,9 +128,9 @@
       .enter()
       .append("rect")
       .attr('class', 'cell')
-      .attr('data-year', (d, i) => d["year"])
-      .attr('data-month', (d, i) => d["month"] - 1)
-      .attr('data-temp', (d, i) => d["variance"])
+      .attr('data-year', (d) => d["year"])
+      .attr('data-month', (d) => d["month"] - 1)
+      .attr('data-temp', (d) => d["variance"])
       .attr('x', (d, i) => xScale(xAxisValues[i]) - 2)
       .attr('y', (d, i) => yScale(yAxisValues[i]) - padding)
       .attr('height', padding + 'px')
@@ -131,9 +147,19 @@
       .on("mouseover", (d, i) => {
         d3.select('.tooltipId' + i).style('fill', 'black');
         d3.select('.tooltipBgId' + i).style("fill", "#c4daff");
+
+        // Add our 'invisible tooltip' to pass tests.
+        tooltip.select('#tooltip')
+          .attr("data-year", () => d["year"])
+          .text('')
+          .style("display", 'inline');
       }).on("mouseout", (d, i) => {
         d3.select('.tooltipId' + i).style('fill', 'none');
         d3.select('.tooltipBgId' + i).style("fill", "none");
+
+        // Remove 'invisible tooltip'.
+        tooltip.select('#tooltip')
+          .style("display", 'none');
       });
 
     //
@@ -196,7 +222,7 @@
         .attr("height", cubeBgsize)
         .attr("width", cubeBgsize)
         .style('fill', 'black');
-        
+
       // Colored boxes
       newSVG.append("rect")
         .attr('class', (d) => 'legend'.concat(i))

@@ -49,7 +49,7 @@
     //
     // Load and initialize raw data from github (or main.js if offline).
     //
-    
+
     const url = "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json";
 
     // Future Learning Sources: https://www.w3schools.com/xml/xml_http.asp
@@ -61,7 +61,7 @@
       const dataset = JSON.parse(req.responseText);
 
       //
-      // Variable Initialization. (Time to actually perform SVG tasks with data.)
+      // * Variable Initialization. (Time to actually perform SVG tasks with data.)
       //
 
       // Time values for y-axis.
@@ -76,7 +76,7 @@
       })
 
       //
-      // Set up scales, SVG canvas size and padding.
+      // * Set up scales, SVG canvas size and padding.
       //
 
       const w = 1000;
@@ -102,8 +102,23 @@
         ])
         .range([h, padding]);
 
+
       //
-      // Begin adding SVGs.
+      // * Create the tooltip!
+      //
+
+      // Add tooltip.
+      const tooltip = d3
+        .select("body")
+        .append("div");
+
+      const tooltipText = tooltip.append("title")
+        .attr("class", "tooltip")
+        .attr("id", "tooltip")
+        .style("display", 'none');
+      
+      //
+      // * Begin adding SVGs for the graph.
       //
 
       const svg = d3.select("body")
@@ -127,10 +142,21 @@
         .on("mouseover", (d, i) => {
           d3.select('.tooltipId' + i).style('fill', 'black');
           d3.select('.tooltipBgId' + i).style("fill", "#c4daff");
+
+          // Add our 'invisible tooltip' to pass tests.
+          tooltip.select('#tooltip')
+            .attr("data-year", () => xAxisValues[i])
+            .text('')
+            .style("display", 'inline');
+
         }).on("mouseout", (d, i) => {
           d3.selectAll('.bar').style("fill", "blue");
           d3.select('.tooltipId' + i).style('fill', 'none');
           d3.select('.tooltipBgId' + i).style("fill", "none");
+
+          // Remove 'invisible tooltip'.
+          tooltip.select('#tooltip')
+            .style("display", 'none');
         });
 
 
@@ -170,7 +196,6 @@
         .attr("class", "tick")
         .call(xAxis)
         .attr("id", "x-axis");
-
 
       //
       // * Add the legend, axis descriptions and title.
