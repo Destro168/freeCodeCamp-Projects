@@ -1,4 +1,4 @@
-var x = [
+var educationData = [
 	{
 		"fips": 1001,
 		"state": "AL",
