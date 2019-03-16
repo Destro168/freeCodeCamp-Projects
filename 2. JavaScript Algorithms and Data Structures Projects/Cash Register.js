@@ -1,5 +1,5 @@
 /**
- * Simulates purchases by taking three args as input. Returns a realistic state for the register.
+ * Simulates purchases by taking three args as input. Returns a realistic state for the register based on inputs.
  * @param {*} price Price of goods.
  * @param {*} cash Cash provided by customer.
  * @param {*} cid A sorted array containing cash in the drawer.
