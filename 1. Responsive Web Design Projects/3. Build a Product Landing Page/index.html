@@ -14,7 +14,7 @@
     crossorigin="anonymous">
 
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+
   <!--
         <script src="main.js"></script>
   -->
@@ -49,7 +49,9 @@
     <div class="formSection">
       <h1>Amazing Food Creations</h1>
       <form id="form" action="https://www.freecodecamp.com/email-submit">
-        <input name="email" type="email" id="email" value="" placeholder="Enter email">
+        <label>Enter your email to signup for news about stuff.</label>
+        <br /><br />
+        <input name="email" type="email" id="email" value="" placeholder="Enter Email">
         <br /><br />
         <input type="submit" id="submit" value="Get Info">
       </form>
@@ -59,15 +61,9 @@
 
     <!-- Product details. Image + Text combo. -->
     <div id="details">
-      <!--
-       Font Awesome not working atm.
-      <i class="fas fa-carrot"></i>
-      <i class="fas fa-cookie-bite"></i>
-      <i class="fas fa-glass-cheers"></i>
-      -->
       <div id="detailsRow">
         <div id="detailsImage">
-          <p>[FA_Image 1]</p>
+          <p><i class="fas fa-carrot"></i></p>
         </div>
         <div id="detailsText">
           <h3>Delicious Carrots</h3>
@@ -77,21 +73,21 @@
 
       <div id="detailsRow">
         <div id="detailsImage">
-          <p>[FA_Image 2]</p>
+          <p><i class="fas fa-cookie-bite"></i></p>
         </div>
         <div id="detailsText">
-          <h3>Delicious Carrots</h3>
-          <p>Made for rabbits with the most selective palette</p>
+          <h3>Tasty cookies</h3>
+          <p>Cookie Monster would be proud.</p>
         </div>
       </div>
 
       <div id="detailsRow">
         <div id="detailsImage">
-          <p>[FA_Image 3]</p>
+          <p><i class="fas fa-glass-cheers"></i></p>
         </div>
         <div id="detailsText">
-          <h3>Delicious Carrots</h3>
-          <p>Made for rabbits with the most selective palette</p>
+          <h3>Sweet Wines</h3>
+          <p>Don't tell my girlfriend. Sweet, not cheap.</p>
         </div>
       </div>
 
@@ -102,10 +98,10 @@
     <!-- Centered video for display -->
     <div class="video">
       <video id="video" controls>
-        <source src="movie.mp4" type="video/mp4">
-        <source src="movie.ogg" type="video/ogg">
+        <source src="rave.mp4" type="video/mp4">
         Your browser does not support the video tag.
       </video>
+      <p>Source: <a href="https://www.youtube.com/watch?v=GDCEH1BcJpk">Knife Party / Pendulum Headline Set Ultra, 2016</a></p>
     </div>
 
     <br />
@@ -135,14 +131,14 @@
 
         <!-- Card Header -->
         <div class="cardTop">
-          <h3>Face</h3>
+          <h3>Mind</h3>
         </div>
 
         <!-- Card Body-->
         <div class="cardBody">
-          <p>Generous Face</p>
-          <p>Glorious Face</p>
-          <p>Amazing Face</p>
+          <p>Tenacious Mind</p>
+          <p>Perfect Mind</p>
+          <p>Clear Mind</p>
           <button>Select</button>
         </div>
       </div>
@@ -152,14 +148,14 @@
 
         <!-- Card Header -->
         <div class="cardTop">
-          <h3>Face</h3>
+          <h3>Magic</h3>
         </div>
 
         <!-- Card Body-->
         <div class="cardBody">
-          <p>Generous Face</p>
-          <p>Glorious Face</p>
-          <p>Amazing Face</p>
+          <p>Fire</p>
+          <p>Earth</p>
+          <p>Wind</p>
           <button>Select</button>
         </div>
 
@@ -168,13 +164,15 @@
     </div>
 
     <footer>
-        <a>Privacy</a> | 
-        <a>Terms</a> | 
-        <a>Contact</a>
-        <p>Copyright 2019, Original Faces</p>
+      <a>Privacy</a> |
+      <a>Terms</a> |
+      <a>Contact</a>
+      <p>Copyright 2019, Don Tech Co.</p>
     </footer>
   </div>
 
 </body>
+
+<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
 
 </html>

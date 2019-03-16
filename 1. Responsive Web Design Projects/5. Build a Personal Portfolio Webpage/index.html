@@ -1,138 +1,384 @@
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="description" content="Technical Documentation Page">
-  <meta name="author" content="Donad Abdlilah-Robinson">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>My Survey Form</title>
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Donald's Portfolio</title>
 
-  <!-- Import Font Awesome -->
-  <ulnk rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
-    crossorigin="anonymous">
+    <!-- Bootstrap -->
+    <link href="lib/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
 
-  <ulnk rel="stylesheet" href="style.css">
-  <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
-  <!--
-        <script src="main.js"></script>
-  -->
+    <!-- Font Awesome JS -->
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ"
+        crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY"
+        crossorigin="anonymous"></script>
 
-  <!-- Codepen ulnk: https://codepen.io/anon/pen/yZjzvr -->
+    <link href="lib/lightbox.css" rel="stylesheet">
+    <link href="lib/toastr.min.css" rel="stylesheet" />
+
 </head>
 
-<style>
-  body {
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: rgb(153, 192, 207);
-    height: 100%;
-    width: 100%;
-  }
+<body class="bg-secondary">
+    <div class="wrapper">
 
-  header {
-    font-weight: bolder;
-    font-size: 30px;
-  }
+        <!-- Nav Bar -->
+        <header id="header">
+            <nav id="navbar">
+                <a href="#welcome-section" class="nav-link">Introduction</a>
+                <a href="#bottom" class="nav-link">Contact Me</a>
+            </nav>
+        </header>
 
-  nav#navbar {
-    position:fixed;
-    display: flex;
-    flex-direction: column;
-    width: 320px;
-    top: 0;
-    left: 0;
-    border: solid 1px black;
-    height: 100%;
-  }
-  
-  header.nav-header, a.nav-link {
-    border-bottom: solid 1px black;
-    padding: 25px;
-  }
+        <!-- Introductory Card -->
+        <div id="welcome-section" class="customJumbo text-center shadow p-3 mb-5 bg-white rounded" style="margin-bottom:0;">
+            <div class="text-container">
+                <h1>Hi.</h1>
+                <h2>I'm <span class="purpleProducts">Donald</span>,</h2>
+                <h2>your Software Engineer.</h2>
+                <h3>Please visit the real, non-freeCodeCamp<br /> version of this website -> <a href="https://dontechsite.000webhostapp.com/">HERE</a></h3>
+                <h3>Codepen.io doesn't support enough files necessary to host the 'real' website. And, I don't include working downloads here to save on project size. (5 MBs is A LOT).</h3>
+            </div>
+        </div>
+        
+        <!-- Tri-Card View (Experience / Education) -->
+        <div class="container-fluid text-center">
 
-  main#main-doc {
-    margin-left: 320px;
-  }
-  @media (max-width: 724px) {
-    nav {
-      display: none;
-    }
-  }
-</style>
+            <div class="row">
 
-<body>
-  <div class="wrapper">
+                <div class="col">
+                    <div class="shadow p-3 mb-5 bg-white rounded cardHeight1">
+                        <div class="card-body">
 
-    <!-- Sidebar -->
-    <nav id="navbar">
-      <header class="nav-header">CSS Grid</header>
-      <a href="#Introduction" class="nav-link">Introduction</a>
-      <a href="#Justice" class="nav-link">Justice</a>
-      <a href="#Journey" class="nav-link">Journey</a>
-      <a href="#Open" class="nav-link">Open</a>
-      <a href="#Greatly" class="nav-link">Greatly</a>
-    </nav>
+                            <h4 class="card-title">Experienced</h4>
 
-    <!-- Document Body -->
-    <main id="main-doc">
+                            <p>
+                                <img class="myImg" src="images/experienced.png">
+                            </p>
 
-      <section class="main-section" id="Introduction">
-        <header>Introduction</header>
-        <p>First, set the display to grid.</p>
-        <p>Setting display to grid enables grid mode.</p>
-        <code>display: grid</code>
-        <ul>
-          <li>She wholly fat who window extent either formal</li>
-          <li>Removing welcomed civiulty or hastened is</li>
-        </ul>
-      </section>
+                            <h4 class="codeSubtext">2 Years at ALC & ADP</h4>
+                        </div>
+                    </div>
 
-      <section class="main-section" id="Justice">
-        <header>Justice</header>
-        <p>Flil her ten open fond walk not down</p>
-        <p>For request general express unknown are</p>
-        <code>He in just mr door body held john down he</code>
-        <ul>
-          <li>She wholly fat who window extent either formal</li>
-          <li>Removing welcomed civiulty or hastened is</li>
-        </ul>
-      </section>
+                </div>
 
-      <section class="main-section" id="Journey">
-        <header>Journey</header>
-        <p>Draw door kept do so come on open mean</p>
-        <p>Estimating stimliated how reasonably precaution diminution she simpulcity sir but</p>
-        <code>Questions am sincerity zealously concluded consisted or no gentleman it</code>
-        <ul>
-          <li>She wholly fat who window extent either formal</li>
-          <li>Removing welcomed civiulty or hastened is</li>
-        </ul>
-      </section>
+                <div class="col">
+                    <div class="shadow p-3 mb-5 bg-white rounded cardHeight1">
+                        <div class="card-body">
 
-      <section class="main-section" id="Open">
-        <header>Open</header>
-        <p>On lasted uneasy exeter my itself effect spirit</p>
-        <p>At design he vanity at cousin longer looked ye</p>
-        <code>Design praise me father an favour</code>
-        <ul>
-          <li>She wholly fat who window extent either formal</li>
-          <li>Removing welcomed civiulty or hastened is</li>
-        </ul>
-      </section>
+                            <h4 class="card-title">Educated</h4>
 
-      <section class="main-section" id="Greatly">
-        <header>Greatly</header>
-        <p>Diminution expression reasonable it we he projection acceptance in devonshire</p>
-        <p>Perpetual it described at he applauded</p>
-        <code>Over fact all son tell this any his. No insisted confined of weddings to returned to debating rendered.</code>
-        <ul>
-          <li>She wholly fat who window extent either formal</li>
-          <li>Removing welcomed civiulty or hastened is</li>
-        </ul>
-      </section>
-    </main>
-  </div>
+                            <p>
+                                <img class="myImg" src="images/educated.png">
+                            </p>
+
+                            <h4 class="codeSubtext">M.S Cybersecurity</h4>
+                            <h4 class="codeSubtext">B.S. Computer Science</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="shadow p-3 mb-5 bg-white rounded cardHeight1">
+                        <div class="card-body">
+
+                            <h4 class="card-title">Certified</h4>
+
+                            <p>
+                                <img class="myImg" src="images/cert_security_plus.png">
+                            </p>
+
+                            <h4 class="codeSubtext">Security+, Javascript, Microsoft Windows 10</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel (Download Credentials) -->
+            <div class="customJumbo-skinny text-center shadow p-3 mb-5 bg-white rounded">
+                <h4>Download My Credentials: </h4>
+                <a href="downloads/dar_resume_certs.zip" class="btn btn-primary" style="margin-top: 5px;" download>dar_resume_certs.zip</a>
+                <a href="downloads/dar_resume_certs.7z" class="btn btn-primary" style="margin-top: 5px;" download>dar_resume_certs.7z</a>
+            </div>
+
+            <!-- Panel (Skill Introduction) -->
+            <div class="customJumbo text-center shadow p-3 mb-5 bg-white rounded" style="margin-bottom: 0px; margin-top: 0px;">
+                <h3 style="padding:10px; margin-bottom: 0px;"><span class="purpleProducts">Real</span>
+                    Proven Skills:</h3>
+            </div>
+
+            <!-- Lightbox Component
+                Source: http://ashleydw.github.io/lightbox/ -->
+
+            <div id="projects" class="row justify-content-center">
+                <div class="col">
+                    <div class="row project-tile">
+
+                        <a href="images/angular6_html2.png" data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-3"
+                            data-title="HTML & Angular 6">
+
+                            <div class="shadow p-1 mb-2 darkGreyHover">
+                                <h4><span style="color: black;">HTML </span><span class="codeSubtext">& Angular 6</span></h4>
+                                <img src="images/angular6_html2.png" class="img-fluid preview-image">
+                            </div>
+
+                        </a>
+
+                        <a href="images/angular6_html.png" data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-3"
+                            data-title="HTML & Angular 6">
+
+                            <div class="shadow p-1 mb-2 darkGreyHover">
+                                <h4><span style="color: black;">HTML </span><span class="codeSubtext">& Angular 6</span></h4>
+                                <img src="images/angular6_html.png" class="img-fluid preview-image">
+                            </div>
+
+                        </a>
+
+                        <a href="images/angular6_typescript.png" data-toggle="lightbox" data-gallery="example-gallery"
+                            class="col-sm-3" data-title="Typescript & Angular 6">
+
+                            <div class="shadow p-1 mb-2 darkGreyHover">
+                                <h4><span style="color: black;">Typescript </span><span class="codeSubtext">& Angular 6</span></h4>
+                                <img src="images/angular6_typescript.png" class="img-fluid preview-image">
+                            </div>
+
+                        </a>
+
+                        <a href="images/angular6_css.png" data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-3"
+                            data-title="CSS & Angular 6">
+
+                            <div class="shadow p-1 mb-2 darkGreyHover">
+                                <h4><span style="color: black;">CSS </span><span class="codeSubtext">& Angular 6</span></h4>
+                                <img src="images/angular6_css.png" class="img-fluid preview-image">
+                            </div>
+
+                        </a>
+
+                    </div>
+                    <div class="row" style="margin-top: 20px;">
+                        <a href="images/backend.png" data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-3"
+                            data-title="Express.js & Mongoose">
+
+                            <div class="shadow p-1 mb-2 darkGreyHover">
+                                <h4><span style="color: black;">Express.js & Mongoose</span></h4>
+                                <img src="images/backend.png" class="img-fluid preview-image">
+                            </div>
+
+                        </a>
+                        <a href="images/actionscript.png" data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-3"
+                            data-title="Actionscript & Adobe Flash">
+
+                            <div class="shadow p-1 mb-2 darkGreyHover">
+                                <h4><span style="color: black;">Actionscript </span><span class="codeSubtext">& Adobe
+                                        Flash</span></h4>
+                                <img src="images/actionscript.png" class="img-fluid preview-image">
+                            </div>
+
+                        </a>
+                        <a href="images/cplusplus1.png" data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-3"
+                            data-title="C++">
+
+                            <div class="shadow p-1 mb-2 darkGreyHover">
+                                <h4><span style="color: black;">C++</span></h4>
+                                <img src="images/cplusplus1.png" class="img-fluid preview-image">
+                            </div>
+
+                        </a>
+                        <a href="images/java1.png" data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-3"
+                            data-title="Java & Bukkit API">
+
+                            <div class="shadow p-1 mb-2 darkGreyHover">
+                                <h4><span style="color: black;">Java </span><span class="codeSubtext">& Bukkit API</span></h4>
+                                <img src="images/java1.png" class="img-fluid preview-image">
+                            </div>
+
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel (Bootstrap Mention) 
+                <div class="customJumbo-skinny text-center shadow p-3 mb-5 bg-white rounded" style="margin-top: 25px;">
+                    <h4>Hear Me Out:</h4>
+                    <h4>[INSERT VIDEO LINK]</h4>
+                </div>
+            -->
+
+            <!-- Panel (Bootstrap Mention) -->
+            <div class="customJumbo text-center shadow p-3 mb-5 bg-white rounded" style="margin-top: 30px;">
+                <h4 style="padding:10px; margin-bottom: 0px; font-style:italic">Did I mention that this website uses
+                    <span class="purpleProducts">Bootstrap 4</span>, <span class="purpleProducts">Ajax</span> & <span
+                        class="purpleProducts">PHP</span>?</h4>
+            </div>
+
+            <!-- Tri-Card View (Experience / Education) -->
+            <div class="container-fluid text-center ">
+
+                <div class="row">
+
+                    <div class="col">
+                        <div class="shadow p-3 mb-5 bg-white rounded cardHeight2">
+                            <div class="card-body">
+
+                                <p class="customHeader">Continual Learning</p>
+
+                                <button type="button" class="btn btn-primary" id="btn_freeCodeCamp">
+                                    freeCodeCamp
+                                </button>
+
+                                <h4 class="codeSubtext" style="font-style: italic; margin-top: 10px;">
+                                    Daily Study & Practice
+                                </h4>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col">
+                        <div class="shadow p-3 mb-5 bg-white rounded cardHeight2">
+                            <div class="card-body">
+
+                                <p class="customHeader">Extensive Programming Record</p>
+
+                                <a id="profile-link" class="btn btn-primary" id="btn_github" style="color: white;" href="https://github.com/Destro168" target="_blank">
+                                    Github
+                                </a>
+
+                                <h4 class="codeSubtext" style="font-style: italic; margin-top: 10px;">
+                                    8+ Years
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="shadow p-3 mb-5 bg-white rounded cardHeight2">
+                            <div class="card-body">
+
+                                <p class="customHeader">Professionally Networked</p>
+
+                                <button type="button" class="btn btn-primary" id="btn_linkedin">
+                                    LinkedIn
+                                </button>
+
+                                <h4 class="codeSubtext" style="font-style: italic; margin-top: 10px;">
+                                    100+ Close Contacts
+                                </h4>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final Panel (Contact Button) -->
+            <div id="bottom" class="customJumbo text-center shadow p-3 mb-5 bg-white rounded" style="margin-bottom:0;">
+                <h3>What more could you want?</h3>
+                <div class="row">
+
+                    <div class="col">
+
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                            Contact Me!
+                        </button>
+                    </div>
+                </div>
+
+                <h4 class="codeSubtext" style="font-style: italic; margin-top: 10px;">
+                    What are you waiting for?<br />
+                    Let's make magic happen together.
+                </h4>
+            </div>
+
+            <!-- 
+            Contact Modal that is not displayed by default. (Accessed via JS)
+            -->
+            <div class="modal fade text-left" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+
+                <div class="modal-dialog" role="document" style="width: 300px;">
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h5 class="modal-title" id="exampleModalLabel">Email Me</h5>
+
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <!-- Help Resource:
+                            https://blog.teamtreehouse.com/create-ajax-contact-form
+                        -->
+                        <div class="modal-body">
+                            <form id="ajax-contact" method="post" action="mailer.php">
+                                <div class="container">
+
+                                    <div class="row">
+                                        <div class="form-group formWidth">
+                                            <label for="name">Name:</label>
+                                            <input type="text" class="form-control" id="name" name="name">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="form-group formWidth">
+                                            <label for="email">Email:</label>
+                                            <input type="text" class="form-control" id="email" name="email">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="form-group formWidth">
+                                            <label for="message">Message:</label>
+                                            <textarea class="form-control" rows="4" cols="24" id="message" name="message"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <button class="btn btn-primary" type="submit">Send</button>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Alerts have some weird styling issues on mobile, so custom style margins and width... -->
+                                        <div class="alert alert-danger formWidth" id="submit_error" role="alert" style="margin-top:10px; margin-bottom: 0px; width: 266px;">
+                                            Send Failed - Please fill out all fields and use a valid email.
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="lib/jquery-3.3.1.min.js"></script>
+
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="lib/bootstrap.bundle.min.js"></script>
+
+        <script src="lib/lightbox.js"></script>
+
+        <script src="lib/toastr.min.js"></script>
+
+        <script src="main.js"></script>
+
+        
+    <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+
 </body>
+
+<script>
+    function openLink(linkToOpen) {}
+</script>
 
 </html>
